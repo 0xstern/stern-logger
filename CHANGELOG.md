@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Build Configuration**: Separated build and development TypeScript configurations
+  - Created `tsconfig.build.json` for production builds (excludes tests and examples)
+  - Updated build script to use dedicated build configuration
+- **Documentation**: Added `CONTRIBUTING.md` with contribution guidelines
+
+### Changed
+
+- **TypeScript Configuration**: Updated `tsconfig.json` to include test files in type checking
+  - Added `test/**/*` to includes
+  - Removed `test` from excludes
+  - Enables better IDE support and type safety for test files
+- **CI/CD**: Updated GitHub Actions autofix workflow name to `autofix.ci`
+
 ## [0.1.0] - 2024-10-21
 
 ### Added

@@ -185,7 +185,7 @@ async function buildTypes(): Promise<void> {
       'bunx',
       'tsc',
       '--project',
-      'tsconfig.json',
+      'tsconfig.build.json',
       '--declaration',
       '--emitDeclarationOnly',
       '--outDir',

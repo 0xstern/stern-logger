@@ -32,11 +32,11 @@
   },
   "include": [
     "src/**/*",
+    "test/**/*",
     "build.ts"
   ],
   "exclude": [
     "dist",
-    "node_modules",
-    "test"
+    "node_modules"
   ]
 }
