@@ -73,7 +73,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "tsc --noEmit",
-    "prepublishOnly": "bun format && bun run lint && bun run test && bun run build"
+    "prepublishOnly": "bun format && bun run lint && bun check && bun run test && bun run build"
   },
   "engines": {
     "node": ">=23.11.0"

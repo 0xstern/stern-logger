@@ -1,3 +1,10 @@
+/**
+ * @fileoverview OpenTelemetry trace context management
+ *
+ * Provides thread-local trace context storage with TTL and size limits,
+ * and Pino mixin creation for automatic trace ID injection into logs.
+ */
+
 import type { SpanContext } from '../types';
 
 import { TELEMETRY_DEFAULTS } from '../constants';

@@ -55,6 +55,7 @@ describe('Logger Module', () => {
 
     test('should have telemetry methods', () => {
       expect(typeof baseLogger.setTraceContext).toBe('function');
+      expect(typeof baseLogger.getTraceContext).toBe('function');
       expect(typeof baseLogger.clearTraceContext).toBe('function');
     });
 
@@ -241,6 +242,12 @@ describe('Logger Module', () => {
         expect(typeof logger.setTraceContext).toBe('function');
       });
 
+      test('should have getTraceContext method', async () => {
+        const logger = await initLogger();
+
+        expect(typeof logger.getTraceContext).toBe('function');
+      });
+
       test('should have clearTraceContext method', async () => {
         const logger = await initLogger();
 
@@ -257,7 +264,7 @@ describe('Logger Module', () => {
         };
 
         expect(() => {
-          logger.setTraceContext?.(context);
+          logger.setTraceContext(context);
         }).not.toThrow();
       });
 
@@ -265,7 +272,7 @@ describe('Logger Module', () => {
         const logger = await initLogger();
 
         expect(() => {
-          logger.clearTraceContext?.();
+          logger.clearTraceContext();
         }).not.toThrow();
       });
 
@@ -294,6 +301,56 @@ describe('Logger Module', () => {
           // @ts-expect-error - Testing invalid input
           logger.setTraceContext({ traceId: 'trace-123' });
         }).toThrow('Trace context must have traceId and spanId');
+      });
+
+      test('should get trace context after setting it', async () => {
+        const logger = await initLogger();
+
+        // Clear any existing context first
+        logger.clearTraceContext();
+
+        const context: SpanContext = {
+          traceId: 'trace-123',
+          spanId: 'span-456',
+          traceFlags: '1',
+        };
+
+        logger.setTraceContext(context);
+        const retrievedContext = logger.getTraceContext();
+
+        expect(retrievedContext).toBeDefined();
+        expect(retrievedContext?.traceId).toBe('trace-123');
+        expect(retrievedContext?.spanId).toBe('span-456');
+        expect(retrievedContext?.traceFlags).toBe('1');
+
+        // Clean up
+        logger.clearTraceContext();
+      });
+
+      test('should return undefined when no trace context is set', async () => {
+        const logger = await initLogger();
+
+        // Clear any existing context to ensure clean slate
+        logger.clearTraceContext();
+
+        const context = logger.getTraceContext();
+
+        expect(context).toBeUndefined();
+      });
+
+      test('should return undefined after clearing trace context', async () => {
+        const logger = await initLogger();
+
+        const context: SpanContext = {
+          traceId: 'trace-789',
+          spanId: 'span-012',
+        };
+
+        logger.setTraceContext(context);
+        expect(logger.getTraceContext()).toBeDefined();
+
+        logger.clearTraceContext();
+        expect(logger.getTraceContext()).toBeUndefined();
       });
 
       test('should work with telemetry disabled', async () => {
@@ -449,13 +506,13 @@ describe('Logger Module', () => {
           traceFlags: '1',
         };
 
-        logger.setTraceContext?.(context);
+        logger.setTraceContext(context);
 
         expect(() => {
           logger.info('Message with trace context');
         }).not.toThrow();
 
-        logger.clearTraceContext?.();
+        logger.clearTraceContext();
 
         expect(() => {
           logger.info('Message without trace context');
@@ -541,10 +598,10 @@ describe('Logger Module', () => {
         };
 
         expect(() => {
-          logger.setTraceContext?.(context);
-          logger.clearTraceContext?.();
-          logger.setTraceContext?.(context);
-          logger.clearTraceContext?.();
+          logger.setTraceContext(context);
+          logger.clearTraceContext();
+          logger.setTraceContext(context);
+          logger.clearTraceContext();
         }).not.toThrow();
       });
 
@@ -688,7 +745,7 @@ describe('Logger Module', () => {
       };
 
       expect(() => {
-        logger.setTraceContext?.(context);
+        logger.setTraceContext(context);
       }).not.toThrow();
     });
   });

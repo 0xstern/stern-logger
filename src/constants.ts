@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Configuration constants and default values
+ *
+ * Defines environment-based defaults for logging levels, file rotation,
+ * sensitive data redaction, validation limits, and telemetry settings.
+ */
+
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 /**
  * Default log level
@@ -14,7 +21,8 @@ export const DEFAULT_NODE_ENV = process.env['NODE_ENV'] ?? 'development';
 /**
  * Default service name
  */
-export const DEFAULT_SERVICE = process.env['SERVICE_NAME'] ?? 'app';
+export const DEFAULT_SERVICE_NAME =
+  process.env['LOG_DEFAULT_SERVICE_NAME'] ?? 'app';
 
 /**
  * Default log directory

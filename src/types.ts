@@ -1,3 +1,10 @@
+/**
+ * @fileoverview TypeScript type definitions and interfaces
+ *
+ * Defines core types for Logger, configuration options, telemetry integration,
+ * service metadata, file rotation, and OpenTelemetry span context.
+ */
+
 import type { Logger as PinoLogger } from 'pino';
 
 /**
@@ -8,12 +15,18 @@ export interface Logger extends PinoLogger {
    * Set the current trace context for correlation
    * @param context - The trace context to set
    */
-  setTraceContext?(context: SpanContext): void;
+  setTraceContext(context: SpanContext): void;
+
+  /**
+   * Get the current trace context
+   * @returns The current trace context, or undefined if not set
+   */
+  getTraceContext(): SpanContext | undefined;
 
   /**
    * Clear the current trace context
    */
-  clearTraceContext?(): void;
+  clearTraceContext(): void;
 }
 
 /**
@@ -69,42 +82,52 @@ export interface ServiceMetadata {
 export interface LoggerOptions {
   /**
    * Log level (debug, info, warn, error, fatal)
+   * @default 'debug' in development, 'info' in production
    */
   level?: string;
 
   /**
    * Default service name for logs
+   * @default 'app'
    */
   defaultService?: string;
 
   /**
    * Current node environment (development, production, etc.)
+   * @default 'development'
    */
   nodeEnv?: string;
 
   /**
    * Directory to store log files
+   * @default undefined (file logging disabled)
    */
   logDir?: string;
 
   /**
    * Configuration for log file rotation
+   * Only used when logDir is specified
+   * @default undefined (no rotation)
    */
   fileRotationOptions?: FileRotationOptions;
 
   /**
    * Telemetry integration options
    * Configuration for connecting logs to telemetry systems
+   * @default undefined (telemetry disabled)
    */
   telemetry?: TelemetryOptions;
 
   /**
    * Paths to redact from logs (e.g., 'password', 'creditCard')
+   * Merged with default paths: password, token, apiKey, secret, ssn, etc.
+   * @default ['password', 'creditCard', 'auth', 'authorization', 'cookie', 'token', 'apiKey', 'secret', 'ssn']
    */
   redactPaths?: ReadonlyArray<string>;
 
   /**
    * Whether to use pretty printing (development mode)
+   * @default true in development, false in production
    */
   prettyPrint?: boolean;
 }
@@ -115,17 +138,21 @@ export interface LoggerOptions {
 export interface FileRotationOptions {
   /**
    * Maximum size of log files before rotation
-   * E.g., '10m' for 10 megabytes
+   * E.g., '10m' for 10 megabytes, '100k' for 100 kilobytes
+   * @default '10m'
    */
   maxSize?: string;
 
   /**
    * Maximum number of log files to keep
+   * Older files are automatically deleted when limit is reached
+   * @default 14
    */
   maxFiles?: number;
 
   /**
-   * Frequency of rotation (e.g., 'daily', 'hourly')
+   * Frequency of rotation
+   * @default 'daily'
    */
   frequency?: 'daily' | 'hourly';
 }
@@ -136,11 +163,20 @@ export interface FileRotationOptions {
 export interface TelemetryOptions {
   /**
    * Whether telemetry integration is enabled
+   * @default false
    */
   enabled?: boolean;
 
   /**
+   * Automatically inject trace context from OpenTelemetry's active span
+   * When true, uses @opentelemetry/api to get the current active span context
+   * @default false
+   */
+  autoInject?: boolean;
+
+  /**
    * Options for how trace context is managed
+   * @default undefined
    */
   contextOptions?: TelemetryContextOptions;
 }
@@ -151,19 +187,22 @@ export interface TelemetryOptions {
 export interface TelemetryContextOptions {
   /**
    * How to correlate logs with traces
-   * 'manual': Developer explicitly sets context
-   * 'auto': System tries to detect active spans
+   * - 'manual': Developer explicitly sets context via setTraceContext()
+   * - 'auto': System tries to detect active spans automatically
+   * @default 'manual'
    */
   correlationMode?: 'manual' | 'auto';
 
   /**
    * Whether to inject trace context into all logs
+   * @default true
    */
   injectTraceContext?: boolean;
 
   /**
    * Function to get the active trace context
    * Used when correlationMode is 'auto'
+   * @default undefined
    */
   getActiveContext?: () => SpanContext | undefined;
 }

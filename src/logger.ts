@@ -1,13 +1,21 @@
+/**
+ * @fileoverview Core logger implementation and initialization
+ *
+ * Provides logger initialization, transport configuration (console/file),
+ * OpenTelemetry trace context integration, and telemetry method enhancement.
+ */
+
 import type { Logger, LoggerOptions, SpanContext } from './types';
 
 import { join } from 'node:path';
 
+import { context, trace } from '@opentelemetry/api';
 import pino from 'pino';
 
 import {
   DEFAULT_LOG_LEVEL,
   DEFAULT_NODE_ENV,
-  DEFAULT_SERVICE,
+  DEFAULT_SERVICE_NAME,
   ROTATION_DEFAULTS,
 } from './constants';
 import { setupLogDirectory } from './utils/directory';
@@ -16,6 +24,7 @@ import { createRedactionOptions } from './utils/redaction';
 import {
   clearTraceContext,
   createTraceMixin,
+  getTraceContext,
   setTraceContext,
 } from './utils/telemetry';
 import { validateAndCastLogger } from './utils/validation';
@@ -35,6 +44,10 @@ function isNodeEnvironment(): boolean {
 const RADIX_BASE_36 = 36;
 const RANDOM_ID_START = 2;
 const RANDOM_ID_END = 11;
+
+// Hex conversion constants for trace flags
+const HEX_RADIX = 16;
+const TRACE_FLAGS_PAD_LENGTH = 2;
 
 /**
  * Get a unique ID for the current process/thread
@@ -191,7 +204,7 @@ function createTransport(
 /**
  * Add telemetry methods to the logger
  *
- * These methods allow setting/clearing OpenTelemetry trace context
+ * These methods allow setting/clearing/getting OpenTelemetry trace context
  * which will be automatically included in logs via the mixin function.
  *
  * @param logger - The Pino logger to enhance
@@ -209,6 +222,11 @@ function enhanceLoggerWithTelemetry(logger: Logger): Logger {
       throw new Error('Trace context must have traceId and spanId');
     }
     setTraceContext(getCurrentThreadId(), context);
+  };
+
+  // Add getTraceContext method
+  logger.getTraceContext = (): SpanContext | undefined => {
+    return getTraceContext(getCurrentThreadId());
   };
 
   // Add clearTraceContext method
@@ -239,7 +257,7 @@ function initializeBaseLogger(): Logger {
       serializers: createSerializers(),
       redact: createRedactionOptions(),
       base: {
-        service: DEFAULT_SERVICE,
+        service: DEFAULT_SERVICE_NAME,
         env: DEFAULT_NODE_ENV,
       },
       ...(transport && { transport }),
@@ -273,6 +291,36 @@ let pinoLogger: Logger = initializeBaseLogger();
 export const baseLogger: Logger = pinoLogger;
 
 /**
+ * Get active trace context from OpenTelemetry API
+ * Used when autoInject is enabled
+ * @returns The active span context, or undefined if no active span
+ */
+function getActiveOtelContext(): SpanContext | undefined {
+  try {
+    const activeContext = context.active();
+    const span = trace.getSpan(activeContext);
+
+    if (span == null) {
+      return undefined;
+    }
+
+    const spanContext = span.spanContext();
+
+    // Convert OpenTelemetry span context to our SpanContext format
+    return {
+      traceId: spanContext.traceId,
+      spanId: spanContext.spanId,
+      traceFlags: spanContext.traceFlags
+        .toString(HEX_RADIX)
+        .padStart(TRACE_FLAGS_PAD_LENGTH, '0'),
+    };
+  } catch {
+    // If OpenTelemetry is not properly initialized, return undefined
+    return undefined;
+  }
+}
+
+/**
  * Creates the mixin function for trace context injection
  * @param options - Logger options with telemetry configuration
  * @returns Pino mixin function
@@ -280,12 +328,20 @@ export const baseLogger: Logger = pinoLogger;
 function createLoggerMixin(
   options?: Partial<LoggerOptions>,
 ): () => Record<string, unknown> {
-  if (options?.telemetry?.enabled) {
-    return createTraceMixin(
-      getCurrentThreadId,
-      options.telemetry.contextOptions?.getActiveContext,
-    );
+  if (options?.telemetry?.enabled === true) {
+    // Use autoInject if enabled, otherwise fall back to custom getActiveContext
+    if (options.telemetry.autoInject === true) {
+      return createTraceMixin(getCurrentThreadId, getActiveOtelContext);
+    }
+
+    if (options.telemetry.contextOptions?.getActiveContext != null) {
+      return createTraceMixin(
+        getCurrentThreadId,
+        options.telemetry.contextOptions.getActiveContext,
+      );
+    }
   }
+
   return createTraceMixin(getCurrentThreadId);
 }
 
@@ -307,7 +363,7 @@ function createPinoConfig(
     serializers: createSerializers(),
     redact: createRedactionOptions(options?.redactPaths),
     base: {
-      service: options?.defaultService ?? DEFAULT_SERVICE,
+      service: options?.defaultService ?? DEFAULT_SERVICE_NAME,
       env: options?.nodeEnv ?? DEFAULT_NODE_ENV,
     },
     ...(transport && { transport }),

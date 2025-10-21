@@ -1,6 +1,6 @@
 # Stern Logger
 
-A production-ready structured logging library built on Pino with OpenTelemetry support and advanced transport capabilities.
+Production-ready structured logging library built on Pino with OpenTelemetry integration, automatic trace correlation, and enterprise-grade security features.
 
 <p>
     <a href="https://github.com/0xstern/stern-logger/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xstern/stern-logger/ci.yml?branch=main" alt="Build Status"></a>
@@ -11,14 +11,14 @@ A production-ready structured logging library built on Pino with OpenTelemetry s
 
 ## Features
 
-- **Structured JSON Logging** - Built on Pino for high-performance structured logging
+- **Structured JSON Logging** - High-performance logging built on Pino
 - **OpenTelemetry Integration** - Automatic trace context correlation for distributed systems
-- **File Rotation** - Configurable file rotation with retention policies via pino-roll
-- **Pretty Console Output** - Development-friendly console formatting via pino-pretty
-- **Sensitive Data Redaction** - Automatic redaction of passwords, tokens, and other sensitive fields
-- **Process Exception Handling** - Built-in handlers for uncaught exceptions and unhandled rejections
+- **Sensitive Data Redaction** - Automatic redaction of passwords, tokens, and credentials
+- **File Rotation** - Configurable rotation with retention policies via pino-roll
+- **Error Handling** - Built-in handlers for uncaught exceptions and unhandled rejections
 - **Input Validation** - Security safeguards with size limits and prototype pollution protection
-- **TypeScript First** - Full TypeScript support with comprehensive type definitions
+- **Pretty Console Output** - Development-friendly formatting via pino-pretty
+- **TypeScript First** - Full type definitions with strict type safety
 
 ## Installation
 
@@ -36,45 +36,21 @@ yarn add @mrstern/logger
 npm install @mrstern/logger
 ```
 
-## Usage
-
-### Quick Start
-
-**1. Use the pre-configured base logger:**
+## Quick Start
 
 ```typescript
 import { baseLogger } from '@mrstern/logger';
 
 baseLogger.info('Application started');
 baseLogger.error({ err: new Error('Connection failed') }, 'Database error');
-baseLogger.warn({ userId: '123' }, 'User exceeded rate limit');
+baseLogger.warn({ userId: '123' }, 'Rate limit exceeded');
 ```
 
-**2. Create a custom logger instance:**
-
-```typescript
-import { initLogger } from '@mrstern/logger';
-
-const logger = await initLogger({
-  level: 'debug',
-  defaultService: 'my-api',
-  logDir: './logs',
-  fileRotationOptions: {
-    maxSize: '10m',
-    maxFiles: 14,
-    frequency: 'daily',
-  },
-  telemetry: {
-    enabled: true,
-  },
-});
-
-logger.info('Custom logger initialized');
-```
+## Core Concepts
 
 ### Structured Logging
 
-**Service metadata for organized logs:**
+Add contextual metadata to logs for filtering, searching, and analysis.
 
 ```typescript
 import { baseLogger } from '@mrstern/logger';
@@ -84,7 +60,6 @@ baseLogger.info(
     service: 'auth-service',
     component: 'authentication',
     operation: 'login',
-    layer: 'application',
     userId: '12345',
     ip: '192.168.1.1',
   },
@@ -92,7 +67,7 @@ baseLogger.info(
 );
 ```
 
-**Child loggers with inherited context:**
+**Child loggers inherit context:**
 
 ```typescript
 const userLogger = baseLogger.child({
@@ -106,81 +81,48 @@ userLogger.debug({ email: 'user@example.com' }, 'Sending verification email');
 
 ### OpenTelemetry Integration
 
-**Manual trace context management:**
+Correlate logs with distributed traces using OpenTelemetry span context.
+
+**Manual Context Management:**
 
 ```typescript
 import { baseLogger } from '@mrstern/logger';
 
-// Set trace context for the current thread/process
+// Set trace context explicitly
 baseLogger.setTraceContext({
   traceId: '4bf92f3577b34da6a3ce929d0e0e4736',
   spanId: '00f067aa0ba902b7',
-  traceFlags: 1,
+  traceFlags: '01',
 });
 
-// All subsequent logs include trace context
-baseLogger.info({ userId: '123' }, 'Processing user request');
-
-// Clear trace context when done
+baseLogger.info('Processing request'); // Includes trace context
 baseLogger.clearTraceContext();
 ```
 
-**Automatic trace context injection:**
+**Auto-Injection:**
 
 ```typescript
 import { initLogger } from '@mrstern/logger';
 
 const logger = await initLogger({
-  telemetry: {
-    enabled: true,
-    autoInject: true, // Automatically inject trace context from OpenTelemetry API
-  },
+  telemetry: { enabled: true, autoInject: true },
 });
 
-// Trace context is automatically included if active span exists
+// Trace context injected automatically when span is active
 logger.info('Request processed');
-```
-
-### Error Logging
-
-**Built-in error serialization:**
-
-```typescript
-try {
-  await riskyOperation();
-} catch (error) {
-  baseLogger.error({ err: error }, 'Operation failed');
-  // Logs full error with stack trace, cause chain, and custom properties
-}
-```
-
-**Custom error context:**
-
-```typescript
-baseLogger.error(
-  {
-    err: error,
-    userId: '123',
-    operation: 'payment',
-    amount: 99.99,
-  },
-  'Payment processing failed',
-);
 ```
 
 ### Sensitive Data Redaction
 
-**Automatic redaction of sensitive fields:**
+Automatically redact sensitive fields from logs.
 
 ```typescript
 baseLogger.info({
   username: 'john.doe',
-  password: 'secret123', // Automatically redacted
-  apiKey: 'sk-1234567890', // Automatically redacted
-  creditCard: '4111-1111-1111-1111', // Automatically redacted
+  password: 'secret123', // Redacted: '[Redacted]'
+  apiKey: 'sk-1234567890', // Redacted: '[Redacted]'
+  creditCard: '4111-1111-1111-1111', // Redacted: '[Redacted]'
 });
-
-// Output: { username: 'john.doe', password: '[Redacted]', apiKey: '[Redacted]', creditCard: '[Redacted]' }
 ```
 
 **Custom redaction paths:**
@@ -194,300 +136,40 @@ const logger = await initLogger({
 });
 ```
 
-### File Rotation
+**Default redacted fields:**
 
-**Configure file rotation for production:**
+`password`, `creditCard`, `auth`, `authorization`, `cookie`, `token`, `apiKey`, `secret`, `ssn` (including nested paths: `*.field`, `*.*.field`)
 
-```typescript
-const logger = await initLogger({
-  logDir: '/var/log/myapp',
-  fileRotationOptions: {
-    maxSize: '10m', // Rotate when file reaches 10MB
-    maxFiles: 14, // Keep last 14 files
-    frequency: 'daily', // Rotate daily
-  },
-});
-```
+### Error Handling
 
-Logs are written to:
-
-- `<logDir>/app.log` - Main application logs
-- `<logDir>/exceptions.log` - Uncaught exceptions
-- `<logDir>/rejections.log` - Unhandled promise rejections
-
-### Process Exception Handling
-
-**Automatic registration of exception handlers:**
+Built-in error serialization with stack traces and cause chains.
 
 ```typescript
-import { initLogger } from '@mrstern/logger';
-
-const logger = await initLogger({
-  logDir: './logs',
-});
-
-// Uncaught exceptions and unhandled rejections are automatically logged
-// to separate files and to the main logger
-```
-
-## API Reference
-
-### initLogger(options?)
-
-Initializes a new logger instance with custom configuration.
-
-**Parameters:**
-
-```typescript
-interface LoggerOptions {
-  // Log level (default: 'info' or process.env.LOG_LEVEL)
-  level?: 'fatal' | 'error' | 'warn' | 'info' | 'debug' | 'trace';
-
-  // Default service name (default: process.env.SERVICE_NAME || 'app')
-  defaultService?: string;
-
-  // Log directory path (default: './logs' or process.env.LOG_DIR)
-  logDir?: string;
-
-  // File rotation options
-  fileRotationOptions?: {
-    maxSize?: string; // Max file size before rotation (default: '10m')
-    maxFiles?: number; // Number of files to retain (default: 14)
-    frequency?: 'daily' | 'hourly'; // Rotation frequency (default: 'daily')
-  };
-
-  // OpenTelemetry options
-  telemetry?: {
-    enabled?: boolean; // Enable telemetry integration (default: false)
-    autoInject?: boolean; // Auto-inject trace context (default: false)
-  };
-
-  // Redaction options
-  redactionOptions?: {
-    paths?: string[]; // Custom paths to redact
-    censor?: string; // Replacement text (default: '[Redacted]')
-    remove?: boolean; // Remove fields instead of censoring
-  };
-
-  // Pretty print options (console only)
-  prettyPrint?: boolean; // Enable pretty console output (default: true in dev)
+try {
+  await riskyOperation();
+} catch (error) {
+  baseLogger.error({ err: error }, 'Operation failed');
+  // Logs full error with stack trace, cause chain, and custom properties
 }
 ```
 
-**Returns:**
+**Add context to errors:**
 
 ```typescript
-Promise<Logger>;
-```
-
-**Example:**
-
-```typescript
-const logger = await initLogger({
-  level: 'debug',
-  defaultService: 'payment-api',
-  logDir: '/var/log/payment-api',
-  fileRotationOptions: {
-    maxSize: '20m',
-    maxFiles: 30,
-    frequency: 'daily',
+baseLogger.error(
+  {
+    err: error,
+    userId: '123',
+    operation: 'payment',
+    amount: 99.99,
   },
-  telemetry: {
-    enabled: true,
-    autoInject: true,
-  },
-  redactionOptions: {
-    paths: ['payment.cardNumber', 'user.ssn'],
-    censor: '[HIDDEN]',
-  },
-});
+  'Payment processing failed',
+);
 ```
 
-### baseLogger
+## Framework Integration
 
-Pre-configured logger instance with sensible defaults, ready to use immediately.
-
-**Example:**
-
-```typescript
-import { baseLogger } from '@mrstern/logger';
-
-baseLogger.info('Quick and easy logging');
-```
-
-### Logger Methods
-
-The logger instance extends Pino's logger with additional methods:
-
-**Standard Pino methods:**
-
-```typescript
-logger.fatal(obj, msg); // Log fatal error (level 60)
-logger.error(obj, msg); // Log error (level 50)
-logger.warn(obj, msg); // Log warning (level 40)
-logger.info(obj, msg); // Log info (level 30)
-logger.debug(obj, msg); // Log debug (level 20)
-logger.trace(obj, msg); // Log trace (level 10)
-```
-
-**Enhanced telemetry methods:**
-
-```typescript
-// Set trace context for current thread
-logger.setTraceContext(context: SpanContext): void
-
-// Get current trace context
-logger.getTraceContext(): SpanContext | undefined
-
-// Clear trace context
-logger.clearTraceContext(): void
-```
-
-**Child logger creation:**
-
-```typescript
-logger.child(bindings: object): Logger
-```
-
-### Types
-
-**SpanContext:**
-
-```typescript
-interface SpanContext {
-  traceId: string; // Trace ID (32 hex chars)
-  spanId: string; // Span ID (16 hex chars)
-  traceFlags?: number; // Trace flags (0 or 1)
-  traceState?: string; // Optional trace state
-}
-```
-
-**ServiceMetadata:**
-
-```typescript
-interface ServiceMetadata {
-  service?: string; // Service name
-  component?: string; // Component/module name
-  operation?: string; // Operation being performed
-  layer?: string; // Application layer (e.g., 'controller', 'service', 'repository')
-  domain?: string; // Business domain
-  integration?: string; // External integration name
-}
-```
-
-## Configuration
-
-### Environment Variables
-
-The logger respects the following environment variables:
-
-#### Core Configuration
-
-| Variable       | Description                   | Default                                       | Example                                |
-| -------------- | ----------------------------- | --------------------------------------------- | -------------------------------------- |
-| `LOG_LEVEL`    | Minimum log level to output   | `info` (production)<br/>`debug` (development) | `debug`, `info`, `warn`, `error`       |
-| `NODE_ENV`     | Node environment              | `development`                                 | `production`, `development`, `staging` |
-| `SERVICE_NAME` | Default service name for logs | `app`                                         | `my-service`, `payment-api`            |
-| `LOG_DIR`      | Directory for log files       | `./logs`                                      | `/var/log/myapp`, `./logs`             |
-
-#### File Rotation Configuration
-
-| Variable                 | Description                       | Default | Example              |
-| ------------------------ | --------------------------------- | ------- | -------------------- |
-| `LOG_ROTATION_MAX_SIZE`  | Maximum file size before rotation | `10m`   | `10m`, `50m`, `100m` |
-| `LOG_ROTATION_MAX_FILES` | Number of rotated files to retain | `14`    | `7`, `14`, `30`      |
-| `LOG_ROTATION_FREQUENCY` | Rotation frequency                | `daily` | `daily`, `hourly`    |
-
-#### Validation Limits
-
-| Variable                      | Description                        | Default         | Example                  |
-| ----------------------------- | ---------------------------------- | --------------- | ------------------------ |
-| `LOG_MAX_MESSAGE_LENGTH`      | Maximum log message length (chars) | `10000`         | `5000`, `10000`, `20000` |
-| `LOG_MAX_META_SIZE`           | Maximum metadata size (bytes)      | `1000000` (1MB) | `500000`, `2000000`      |
-| `LOG_MAX_SERVICE_NAME_LENGTH` | Maximum service name length        | `100`           | `50`, `100`, `200`       |
-| `LOG_MAX_CONTEXT_FIELDS`      | Maximum context fields per log     | `50`            | `25`, `50`, `100`        |
-| `LOG_MAX_STRING_FIELD_LENGTH` | Maximum string field length        | `1000`          | `500`, `1000`, `2000`    |
-
-#### Telemetry Configuration
-
-| Variable                            | Description                      | Default          | Example                     |
-| ----------------------------------- | -------------------------------- | ---------------- | --------------------------- |
-| `LOG_TELEMETRY_MAX_CONTEXT_SIZE`    | Maximum trace contexts stored    | `10000`          | `5000`, `10000`, `20000`    |
-| `LOG_TELEMETRY_TTL_MS`              | Trace context TTL (milliseconds) | `300000` (5 min) | `60000`, `300000`, `600000` |
-| `LOG_TELEMETRY_CLEANUP_INTERVAL_MS` | Cleanup interval (milliseconds)  | `60000` (1 min)  | `30000`, `60000`, `120000`  |
-
-**Example configuration:**
-
-```bash
-# Development
-NODE_ENV=development
-LOG_LEVEL=debug
-SERVICE_NAME=my-api
-LOG_DIR=./logs
-LOG_ROTATION_MAX_SIZE=10m
-LOG_ROTATION_MAX_FILES=7
-
-# Production
-NODE_ENV=production
-LOG_LEVEL=info
-SERVICE_NAME=payment-api
-LOG_DIR=/var/log/payment-api
-LOG_ROTATION_MAX_SIZE=50m
-LOG_ROTATION_MAX_FILES=30
-LOG_MAX_MESSAGE_LENGTH=20000
-LOG_TELEMETRY_MAX_CONTEXT_SIZE=20000
-
-# High-security environment (stricter limits)
-NODE_ENV=production
-LOG_LEVEL=warn
-LOG_MAX_MESSAGE_LENGTH=5000
-LOG_MAX_META_SIZE=500000
-LOG_MAX_CONTEXT_FIELDS=25
-```
-
-**Behavior notes:**
-
-- If `LOG_LEVEL` is not set, it defaults to `info` in production and `debug` in development
-- `NODE_ENV` affects default log level and pretty printing behavior
-- All environment variables can be overridden by `initLogger()` options
-- Validation limits help prevent memory issues and DoS attacks
-- Telemetry TTL and cleanup prevent memory leaks in long-running processes
-
-### Default Redaction Paths
-
-The following fields are automatically redacted:
-
-- `password`, `*.password`, `*.*.password`
-- `creditCard`, `*.creditCard`, `*.*.creditCard`
-- `auth`, `*.auth`, `*.*.auth`
-- `authorization`, `*.authorization`, `*.*.authorization`
-- `cookie`, `*.cookie`, `*.*.cookie`
-- `token`, `*.token`, `*.*.token`
-- `apiKey`, `*.apiKey`, `*.*.apiKey`
-- `secret`, `*.secret`, `*.*.secret`
-- `ssn`, `*.ssn`, `*.*.ssn`
-
-### Validation Limits
-
-Security and performance limits:
-
-- **Message Length**: 10,000 characters (truncated with ellipsis)
-- **Metadata Size**: 1 MB (rejected if exceeded)
-- **Context Fields**: 50 fields maximum (extras ignored)
-- **Trace Context TTL**: 5 minutes (auto-cleanup)
-- **Max Trace Contexts**: 10,000 (LRU eviction)
-
-## Performance
-
-- **Pino Foundation**: Built on one of the fastest Node.js loggers
-- **Fast Redaction**: ~2% overhead for non-wildcard paths
-- **Efficient Mixin**: Trace context injection via Pino's native mixin
-- **Lazy Evaluation**: Metadata validated only when logged
-- **Optimized Serialization**: Custom error serializer with minimal overhead
-
-## Examples
-
-### Express.js Integration
+### Express.js
 
 ```typescript
 import { initLogger } from '@mrstern/logger';
@@ -519,6 +201,131 @@ app.use((err, req, res, next) => {
 });
 ```
 
+### Hono Server
+
+```typescript
+import { serve } from '@hono/node-server';
+import { initLogger } from '@mrstern/logger';
+import { Hono } from 'hono';
+import { requestId } from 'hono/request-id';
+
+const logger = await initLogger({
+  defaultService: 'hono-api',
+  telemetry: { enabled: true, autoInject: true },
+});
+
+const app = new Hono();
+
+// Request ID middleware
+app.use(requestId());
+
+// Logger middleware
+app.use(async (c, next) => {
+  const requestLogger = logger.child({
+    requestId: c.var.requestId,
+    method: c.req.method,
+    path: c.req.path,
+  });
+
+  c.set('logger', requestLogger);
+  requestLogger.info('Incoming request');
+
+  await next();
+
+  requestLogger.info({ status: c.res.status }, 'Request completed');
+});
+
+// Routes
+app.get('/', (c) => {
+  c.var.logger.info('Processing root request');
+  return c.json({ message: 'Hello from Hono!' });
+});
+
+// Error handler
+app.onError((err, c) => {
+  c.var.logger.error({ err }, 'Request failed');
+  return c.json({ error: 'Internal server error' }, 500);
+});
+
+serve(app);
+```
+
+### React
+
+**Context provider:**
+
+```typescript
+// LoggerContext.tsx
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { Logger } from '@mrstern/logger';
+
+import { baseLogger } from '@mrstern/logger';
+
+const LoggerContext = createContext<Logger>(baseLogger);
+
+export function LoggerProvider({ children }: { children: React.ReactNode }) {
+  const [logger] = useState(() => baseLogger.child({ component: 'react-app' }));
+
+  useEffect(() => {
+    logger.info('React app mounted');
+    return () => logger.info('React app unmounted');
+  }, [logger]);
+
+  return (
+    <LoggerContext.Provider value={logger}>{children}</LoggerContext.Provider>
+  );
+}
+
+export const useLogger = () => useContext(LoggerContext);
+```
+
+**Component usage:**
+
+```typescript
+function UserProfile({ userId }: { userId: string }) {
+  const logger = useLogger();
+
+  useEffect(() => {
+    const componentLogger = logger.child({ userId, component: 'UserProfile' });
+    componentLogger.info('Loading user profile');
+
+    fetchUserProfile(userId)
+      .then(() => componentLogger.info('Profile loaded'))
+      .catch((err) => componentLogger.error({ err }, 'Failed to load profile'));
+  }, [userId, logger]);
+
+  return <div>User Profile</div>;
+}
+```
+
+### Background Jobs
+
+```typescript
+import { baseLogger } from '@mrstern/logger';
+
+async function processBackgroundJobs() {
+  const jobLogger = baseLogger.child({
+    component: 'job-processor',
+    layer: 'worker',
+  });
+
+  jobLogger.info('Starting job processor');
+
+  while (true) {
+    try {
+      const job = await fetchNextJob();
+
+      jobLogger.info({ jobId: job.id, jobType: job.type }, 'Processing job');
+      await executeJob(job);
+      jobLogger.info({ jobId: job.id }, 'Job completed');
+    } catch (error) {
+      jobLogger.error({ err: error }, 'Job processing failed');
+      await sleep(5000);
+    }
+  }
+}
+```
+
 ### Microservices with OpenTelemetry
 
 ```typescript
@@ -548,33 +355,255 @@ async function processOrder(orderId: string) {
 }
 ```
 
-### Background Job Processing
+## API Reference
+
+### initLogger(options?)
+
+Initialize a custom logger instance with configuration.
+
+**Options:**
+
+| Property              | Type                                                           | Default                                         | Description                    |
+| --------------------- | -------------------------------------------------------------- | ----------------------------------------------- | ------------------------------ |
+| `level`               | `'fatal' \| 'error' \| 'warn' \| 'info' \| 'debug' \| 'trace'` | `info` (prod)<br/>`debug` (dev)                 | Minimum log level to output    |
+| `defaultService`      | `string`                                                       | `process.env.LOG_DEFAULT_SERVICE_NAME \| 'app'` | Default service name for logs  |
+| `logDir`              | `string`                                                       | `process.env.LOG_DIR \| './logs'`               | Log directory path             |
+| `fileRotationOptions` | `FileRotationOptions`                                          | See below                                       | File rotation configuration    |
+| `telemetry`           | `TelemetryOptions`                                             | `{ enabled: false }`                            | OpenTelemetry integration      |
+| `redactionOptions`    | `RedactionOptions`                                             | Default paths redacted                          | Custom redaction configuration |
+| `prettyPrint`         | `boolean`                                                      | `true` (dev)<br/>`false` (prod)                 | Enable pretty console output   |
+
+**FileRotationOptions:**
+
+| Property    | Type                  | Default | Description                   |
+| ----------- | --------------------- | ------- | ----------------------------- |
+| `maxSize`   | `string`              | `10m`   | Max file size before rotation |
+| `maxFiles`  | `number`              | `14`    | Number of files to retain     |
+| `frequency` | `'daily' \| 'hourly'` | `daily` | Rotation frequency            |
+
+**TelemetryOptions:**
+
+| Property     | Type      | Default | Description                        |
+| ------------ | --------- | ------- | ---------------------------------- |
+| `enabled`    | `boolean` | `false` | Enable telemetry integration       |
+| `autoInject` | `boolean` | `false` | Auto-inject trace context from API |
+
+**RedactionOptions:**
+
+| Property | Type       | Default       | Description                     |
+| -------- | ---------- | ------------- | ------------------------------- |
+| `paths`  | `string[]` | Default paths | Custom paths to redact          |
+| `censor` | `string`   | `[Redacted]`  | Replacement text                |
+| `remove` | `boolean`  | `false`       | Remove fields instead of censor |
+
+**Returns:** `Promise<Logger>`
+
+**Example:**
+
+```typescript
+const logger = await initLogger({
+  level: 'debug',
+  defaultService: 'payment-api',
+  logDir: '/var/log/payment-api',
+  fileRotationOptions: {
+    maxSize: '20m',
+    maxFiles: 30,
+    frequency: 'daily',
+  },
+  telemetry: {
+    enabled: true,
+    autoInject: true,
+  },
+  redactionOptions: {
+    paths: ['payment.cardNumber', 'user.ssn'],
+    censor: '[HIDDEN]',
+  },
+});
+```
+
+### baseLogger
+
+Pre-configured logger instance ready to use immediately.
 
 ```typescript
 import { baseLogger } from '@mrstern/logger';
 
-async function processBackgroundJobs() {
-  const jobLogger = baseLogger.child({
-    component: 'job-processor',
-    layer: 'worker',
-  });
+baseLogger.info('Quick and easy logging');
+```
 
-  jobLogger.info('Starting job processor');
+### Logger Methods
 
-  while (true) {
-    try {
-      const job = await fetchNextJob();
+**Standard logging methods:**
 
-      jobLogger.info({ jobId: job.id, jobType: job.type }, 'Processing job');
-      await executeJob(job);
-      jobLogger.info({ jobId: job.id }, 'Job completed');
-    } catch (error) {
-      jobLogger.error({ err: error }, 'Job processing failed');
-      await sleep(5000);
-    }
-  }
+```typescript
+logger.fatal(obj, msg); // Log fatal error (level 60)
+logger.error(obj, msg); // Log error (level 50)
+logger.warn(obj, msg); // Log warning (level 40)
+logger.info(obj, msg); // Log info (level 30)
+logger.debug(obj, msg); // Log debug (level 20)
+logger.trace(obj, msg); // Log trace (level 10)
+```
+
+**Telemetry methods:**
+
+```typescript
+logger.setTraceContext(context: SpanContext): void      // Set trace context
+logger.getTraceContext(): SpanContext | undefined       // Get current trace context
+logger.clearTraceContext(): void                        // Clear trace context
+```
+
+**Child logger:**
+
+```typescript
+logger.child(bindings: object): Logger                  // Create child logger with inherited context
+```
+
+### Types
+
+**SpanContext:**
+
+```typescript
+interface SpanContext {
+  traceId: string; // Trace ID (32 hex chars)
+  spanId: string; // Span ID (16 hex chars)
+  traceFlags?: string; // Trace flags as hex string (e.g., '01')
+  traceState?: string; // Optional trace state
 }
 ```
+
+**ServiceMetadata:**
+
+```typescript
+interface ServiceMetadata {
+  service?: string; // Service name
+  component?: string; // Component/module name
+  operation?: string; // Operation being performed
+  layer?: string; // Application layer (e.g., 'controller', 'service', 'repository')
+  domain?: string; // Business domain
+  integration?: string; // External integration name
+}
+```
+
+## Configuration
+
+### Environment Variables
+
+**Core Configuration:**
+
+| Variable                   | Description          | Default                         | Example                          |
+| -------------------------- | -------------------- | ------------------------------- | -------------------------------- |
+| `LOG_LEVEL`                | Minimum log level    | `info` (prod)<br/>`debug` (dev) | `debug`, `info`, `warn`, `error` |
+| `NODE_ENV`                 | Node environment     | `development`                   | `production`, `staging`          |
+| `LOG_DEFAULT_SERVICE_NAME` | Default service name | `app`                           | `my-service`, `payment-api`      |
+| `LOG_DIR`                  | Log directory path   | `./logs`                        | `/var/log/myapp`                 |
+
+**File Rotation:**
+
+| Variable                 | Description               | Default | Example              |
+| ------------------------ | ------------------------- | ------- | -------------------- |
+| `LOG_ROTATION_MAX_SIZE`  | Max file size             | `10m`   | `10m`, `50m`, `100m` |
+| `LOG_ROTATION_MAX_FILES` | Number of files to retain | `14`    | `7`, `14`, `30`      |
+| `LOG_ROTATION_FREQUENCY` | Rotation frequency        | `daily` | `daily`, `hourly`    |
+
+**Validation Limits:**
+
+| Variable                      | Description                | Default         | Example             |
+| ----------------------------- | -------------------------- | --------------- | ------------------- |
+| `LOG_MAX_MESSAGE_LENGTH`      | Max log message length     | `10000`         | `5000`, `20000`     |
+| `LOG_MAX_META_SIZE`           | Max metadata size (bytes)  | `1000000` (1MB) | `500000`, `2000000` |
+| `LOG_MAX_SERVICE_NAME_LENGTH` | Max service name length    | `100`           | `50`, `200`         |
+| `LOG_MAX_CONTEXT_FIELDS`      | Max context fields per log | `50`            | `25`, `100`         |
+| `LOG_MAX_STRING_FIELD_LENGTH` | Max string field length    | `1000`          | `500`, `2000`       |
+
+**Telemetry:**
+
+| Variable                            | Description               | Default          | Example           |
+| ----------------------------------- | ------------------------- | ---------------- | ----------------- |
+| `LOG_TELEMETRY_MAX_CONTEXT_SIZE`    | Max trace contexts stored | `10000`          | `5000`, `20000`   |
+| `LOG_TELEMETRY_TTL_MS`              | Trace context TTL (ms)    | `300000` (5 min) | `60000`, `600000` |
+| `LOG_TELEMETRY_CLEANUP_INTERVAL_MS` | Cleanup interval (ms)     | `60000` (1 min)  | `30000`, `120000` |
+
+**Example configuration:**
+
+```bash
+# Development
+NODE_ENV=development
+LOG_LEVEL=debug
+LOG_DEFAULT_SERVICE_NAME=my-api
+LOG_DIR=./logs
+LOG_ROTATION_MAX_SIZE=10m
+LOG_ROTATION_MAX_FILES=7
+
+# Production
+NODE_ENV=production
+LOG_LEVEL=info
+LOG_DEFAULT_SERVICE_NAME=payment-api
+LOG_DIR=/var/log/payment-api
+LOG_ROTATION_MAX_SIZE=50m
+LOG_ROTATION_MAX_FILES=30
+LOG_MAX_MESSAGE_LENGTH=20000
+LOG_TELEMETRY_MAX_CONTEXT_SIZE=20000
+```
+
+**Behavior notes:**
+
+- Environment variables can be overridden by `initLogger()` options
+- Validation limits prevent memory issues and DoS attacks
+- Telemetry TTL and cleanup prevent memory leaks in long-running processes
+
+## Advanced Topics
+
+### File Rotation
+
+Configure file rotation for production environments.
+
+```typescript
+const logger = await initLogger({
+  logDir: '/var/log/myapp',
+  fileRotationOptions: {
+    maxSize: '10m', // Rotate when file reaches 10MB
+    maxFiles: 14, // Keep last 14 files
+    frequency: 'daily', // Rotate daily
+  },
+});
+```
+
+**Log file locations:**
+
+- `<logDir>/app.log` - Main application logs
+- `<logDir>/exceptions.log` - Uncaught exceptions
+- `<logDir>/rejections.log` - Unhandled promise rejections
+
+### Process Exception Handling
+
+Automatically log uncaught exceptions and unhandled rejections.
+
+```typescript
+const logger = await initLogger({
+  logDir: './logs',
+});
+
+// Uncaught exceptions and unhandled rejections are automatically logged
+// to separate files and to the main logger
+```
+
+### Validation Limits
+
+Security and performance limits enforced by the logger:
+
+- **Message Length**: 10,000 characters (truncated with ellipsis)
+- **Metadata Size**: 1 MB (rejected if exceeded)
+- **Context Fields**: 50 fields maximum (extras ignored)
+- **Trace Context TTL**: 5 minutes (auto-cleanup)
+- **Max Trace Contexts**: 10,000 (LRU eviction)
+
+### Performance
+
+- **Pino Foundation**: Built on one of the fastest Node.js loggers
+- **Fast Redaction**: ~2% overhead for non-wildcard paths
+- **Efficient Mixin**: Trace context injection via Pino's native mixin
+- **Lazy Evaluation**: Metadata validated only when logged
+- **Optimized Serialization**: Custom error serializer with minimal overhead
 
 ## Development
 
@@ -609,10 +638,10 @@ bun run format:check
 
 MIT License - see [LICENSE.md](LICENSE.md) for details.
 
-## Author
-
-0xstern ([@mrstern\_](https://twitter.com/mrstern_))
-
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request on [GitHub](https://github.com/0xstern/stern-logger).
+
+## Support
+
+If you find this helpful, follow me on X [@mrstern\_](https://x.com/mrstern_)

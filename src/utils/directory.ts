@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Log directory setup and validation
+ *
+ * Provides utilities for creating and validating log directories,
+ * ensuring proper file system permissions before writing log files.
+ */
+
 import { accessSync, constants, existsSync, mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 

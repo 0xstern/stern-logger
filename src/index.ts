@@ -1,7 +1,7 @@
 /**
- * Stern Logger - Enterprise-grade Pino-based logging library
+ * @fileoverview Main entry point for stern-logger library
  *
- * This library provides a production-ready logging solution with:
+ * Stern Logger is an enterprise-grade Pino-based logging solution providing:
  * - Multiple log levels (fatal, error, warn, info, debug)
  * - Child logger support with hierarchical context
  * - Structured JSON logging
@@ -10,27 +10,23 @@
  * - OpenTelemetry trace context correlation
  * - Sensitive data redaction (fast-redact)
  * - Exception and rejection handling
- * - Optional rate limiting utilities
  * - Input validation utilities
  * - Comprehensive error handling
  *
- * @example
+ * @example Basic usage with pre-configured logger
  * ```typescript
  * import { baseLogger } from 'stern-logger';
  *
- * // Use the pre-configured logger
  * baseLogger.info('Application started');
  *
- * // Create a child logger with context
  * const userLogger = baseLogger.child({ component: 'user', operation: 'create' });
  * userLogger.info({ userId: '123' }, 'User created successfully');
  * ```
  *
- * @example
+ * @example Custom logger initialization
  * ```typescript
  * import { initLogger } from 'stern-logger';
  *
- * // Initialize with custom configuration
  * const logger = await initLogger({
  *   level: 'debug',
  *   defaultService: 'my-api',
@@ -105,7 +101,7 @@ export {
   DEFAULT_LOG_LEVEL,
   DEFAULT_NODE_ENV,
   DEFAULT_REDACT_PATHS,
-  DEFAULT_SERVICE,
+  DEFAULT_SERVICE_NAME,
   LOG_DIRECTORY,
   ROTATION_DEFAULTS,
   TELEMETRY_DEFAULTS,

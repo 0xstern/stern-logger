@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Sensitive data redaction configuration
+ *
+ * Provides utilities for creating Pino redaction options using fast-redact,
+ * with default patterns for common sensitive fields and custom path support.
+ */
+
 import { DEFAULT_REDACT_PATHS } from '../constants';
 
 /**

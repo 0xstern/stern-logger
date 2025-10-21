@@ -11,7 +11,7 @@ import {
   DEFAULT_LOG_LEVEL,
   DEFAULT_NODE_ENV,
   DEFAULT_REDACT_PATHS,
-  DEFAULT_SERVICE,
+  DEFAULT_SERVICE_NAME,
   LOG_DIRECTORY,
   MEMORY_SIZE,
   ROTATION_DEFAULTS,
@@ -95,17 +95,17 @@ describe('Constants', () => {
     });
   });
 
-  describe('DEFAULT_SERVICE', () => {
-    test('should default to "app" when SERVICE_NAME is not set', () => {
-      expect(DEFAULT_SERVICE).toBeDefined();
-      expect(typeof DEFAULT_SERVICE).toBe('string');
-      expect(DEFAULT_SERVICE.length).toBeGreaterThan(0);
+  describe('DEFAULT_SERVICE_NAME', () => {
+    test('should default to "app" when LOG_DEFAULT_SERVICE_NAME is not set', () => {
+      expect(DEFAULT_SERVICE_NAME).toBeDefined();
+      expect(typeof DEFAULT_SERVICE_NAME).toBe('string');
+      expect(DEFAULT_SERVICE_NAME.length).toBeGreaterThan(0);
     });
 
     test('should be a non-empty string', () => {
-      expect(DEFAULT_SERVICE).toBeDefined();
-      expect(typeof DEFAULT_SERVICE).toBe('string');
-      expect(DEFAULT_SERVICE.length).toBeGreaterThan(0);
+      expect(DEFAULT_SERVICE_NAME).toBeDefined();
+      expect(typeof DEFAULT_SERVICE_NAME).toBe('string');
+      expect(DEFAULT_SERVICE_NAME.length).toBeGreaterThan(0);
     });
   });
 
@@ -289,7 +289,7 @@ describe('Constants', () => {
     test('all constants should be exported', () => {
       expect(DEFAULT_LOG_LEVEL).toBeDefined();
       expect(DEFAULT_NODE_ENV).toBeDefined();
-      expect(DEFAULT_SERVICE).toBeDefined();
+      expect(DEFAULT_SERVICE_NAME).toBeDefined();
       expect(LOG_DIRECTORY).toBeDefined();
       expect(ROTATION_DEFAULTS).toBeDefined();
       expect(DEFAULT_REDACT_PATHS).toBeDefined();
@@ -301,7 +301,7 @@ describe('Constants', () => {
     test('all constants should have expected types', () => {
       expect(typeof DEFAULT_LOG_LEVEL).toBe('string');
       expect(typeof DEFAULT_NODE_ENV).toBe('string');
-      expect(typeof DEFAULT_SERVICE).toBe('string');
+      expect(typeof DEFAULT_SERVICE_NAME).toBe('string');
       expect(typeof LOG_DIRECTORY).toBe('string');
       expect(typeof ROTATION_DEFAULTS).toBe('object');
       expect(Array.isArray(DEFAULT_REDACT_PATHS)).toBe(true);

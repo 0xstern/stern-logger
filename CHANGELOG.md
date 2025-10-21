@@ -7,14 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - 2024-10-21
-
 ### Added
 
-- **Build Configuration**: Separated build and development TypeScript configurations
-  - Created `tsconfig.build.json` for production builds (excludes tests and examples)
-  - Updated build script to use dedicated build configuration
-- **Documentation**: Added `CONTRIBUTING.md` with contribution guidelines
+- **Telemetry API**: `getTraceContext()` method to Logger interface for retrieving active trace context
+- **Auto-Injection**: `autoInject` option in TelemetryOptions for automatic OpenTelemetry context extraction
+- **Code Documentation**: Professional `@fileoverview` JSDoc headers to all source files
+
+### Changed
+
+- **Type Safety**: Made telemetry methods non-optional (removed `?` from `setTraceContext` and `clearTraceContext`)
+- **Constants**: Renamed `DEFAULT_SERVICE` to `DEFAULT_SERVICE_NAME` for clarity
+- **Documentation**: Restructured README with framework integration examples (Hono, React, Express) and improved flow
+
+### Fixed
+
+- **Tests**: Updated test mocks to include required Logger telemetry methods
+- **Validation**: Replaced type assertions with behavior testing in validation tests
+
+## [0.1.0] - 2024-10-21
 
 ### Changed
 
@@ -66,6 +76,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Integration tests for logger lifecycle
   - Edge case coverage
   - 690+ assertions with 100% passing rate
+- **Build Configuration**: Separated build and development TypeScript configurations
+  - Created `tsconfig.build.json` for production builds (excludes tests and examples)
+  - Updated build script to use dedicated build configuration
+- **Documentation**: Added `CONTRIBUTING.md` with contribution guidelines
 
 ### Fixed
 

@@ -1,4 +1,11 @@
 /**
+ * @fileoverview Error handling and serialization utilities
+ *
+ * Provides custom error classes, error normalization, and Pino-compatible
+ * error serializers for enhanced error logging and debugging.
+ */
+
+/**
  * JSON indentation for error formatting
  */
 const JSON_INDENT_SPACES = 2;

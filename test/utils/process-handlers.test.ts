@@ -5,6 +5,8 @@
  * for uncaught exceptions and unhandled promise rejections.
  */
 
+import type { Logger } from '../../src/types';
+
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -22,7 +24,7 @@ const TEST_DIR_PREFIX = 'stern-logger-process-test-';
 
 describe('Process Handlers', () => {
   let testLogDir: string;
-  let mockLogger: pino.Logger;
+  let mockLogger: Logger;
   let originalProcessOn: typeof process.on;
   let originalProcessOff: typeof process.off;
   let registeredHandlers: Map<string, Set<(...args: Array<unknown>) => void>>;
@@ -32,10 +34,14 @@ describe('Process Handlers', () => {
     testLogDir = join(tmpdir(), `${TEST_DIR_PREFIX}${Date.now()}`);
     mkdirSync(testLogDir, { recursive: true });
 
-    // Create mock logger
-    mockLogger = pino({ level: 'fatal' });
+    // Create mock logger with our Logger type
+    const baseLogger = pino({ level: 'fatal' });
+    mockLogger = baseLogger as Logger;
     mockLogger.fatal = mock(() => {});
     mockLogger.error = mock(() => {});
+    mockLogger.setTraceContext = mock(() => {});
+    mockLogger.getTraceContext = mock(() => undefined);
+    mockLogger.clearTraceContext = mock(() => {});
 
     // Track registered handlers
     registeredHandlers = new Map();
@@ -513,11 +519,20 @@ describe('Process Handlers', () => {
     });
 
     test('should work with multiple different logger instances', () => {
-      const logger1 = pino({ level: 'fatal' });
-      const logger2 = pino({ level: 'fatal' });
+      const baseLogger1 = pino({ level: 'fatal' });
+      const baseLogger2 = pino({ level: 'fatal' });
 
+      const logger1 = baseLogger1 as Logger;
       logger1.fatal = mock(() => {});
+      logger1.setTraceContext = mock(() => {});
+      logger1.getTraceContext = mock(() => undefined);
+      logger1.clearTraceContext = mock(() => {});
+
+      const logger2 = baseLogger2 as Logger;
       logger2.fatal = mock(() => {});
+      logger2.setTraceContext = mock(() => {});
+      logger2.getTraceContext = mock(() => undefined);
+      logger2.clearTraceContext = mock(() => {});
 
       registerProcessHandlers(logger1);
       unregisterProcessHandlers();

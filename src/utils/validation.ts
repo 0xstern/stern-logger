@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Input validation and sanitization utilities
+ *
+ * Provides validation for log messages, metadata, and logger instances,
+ * with size limits, sanitization, and protection against injection attacks.
+ */
+
 import type { Logger as PinoLogger } from 'pino';
 
 import type { Logger, ServiceMetadata, SpanContext } from '../types';

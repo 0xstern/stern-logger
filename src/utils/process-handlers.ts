@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Process-level exception and rejection handlers
+ *
+ * Provides utilities for registering handlers for uncaught exceptions and
+ * unhandled promise rejections, with dedicated logging to separate files.
+ */
+
 import type { Logger } from '../types';
 
 import { join } from 'node:path';

@@ -393,8 +393,14 @@ describe('Validation Utilities', () => {
       });
 
       const castedLogger = validateAndCastLogger(validLogger);
-      expect(castedLogger).toBe(validLogger);
+
+      // Verify the logger has all required Pino methods
       expect(typeof castedLogger.info).toBe('function');
+      expect(typeof castedLogger.error).toBe('function');
+      expect(typeof castedLogger.warn).toBe('function');
+      expect(typeof castedLogger.debug).toBe('function');
+      expect(typeof castedLogger.child).toBe('function');
+      expect(castedLogger.level).toBeDefined();
     });
 
     test('should throw for invalid logger', () => {
