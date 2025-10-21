@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2024-10-21
+
 ### Added
 
 - **Build Configuration**: Separated build and development TypeScript configurations
@@ -21,8 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed `test` from excludes
   - Enables better IDE support and type safety for test files
 - **CI/CD**: Updated GitHub Actions autofix workflow name to `autofix.ci`
-
-## [0.1.0] - 2024-10-21
 
 ### Added
 

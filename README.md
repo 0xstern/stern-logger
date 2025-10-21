@@ -4,8 +4,8 @@ A production-ready structured logging library built on Pino with OpenTelemetry s
 
 <p>
     <a href="https://github.com/0xstern/stern-logger/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xstern/stern-logger/ci.yml?branch=main" alt="Build Status"></a>
-    <a href="https://github.com/0xstern/stern-logger/releases"><img src="https://img.shields.io/npm/v/@mrster/logger.svg" alt="Latest Release"></a>
-    <a href="https://github.com/0xstern/stern-logger/blob/main/LICENSE.md"><img src="https://img.shields.io/npm/l/@mrster/logger.svg" alt="License"></a>
+    <a href="https://github.com/0xstern/stern-logger/releases"><img src="https://img.shields.io/npm/v/@mrstern/logger.svg" alt="Latest Release"></a>
+    <a href="https://github.com/0xstern/stern-logger/blob/main/LICENSE.md"><img src="https://img.shields.io/npm/l/@mrstern/logger.svg" alt="License"></a>
     <a href="https://twitter.com/mrstern_"><img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/mrstern_.svg?style=social"></a>
 </p>
 
@@ -24,16 +24,16 @@ A production-ready structured logging library built on Pino with OpenTelemetry s
 
 ```bash
 # Bun
-bun add @mrster/logger
+bun add @mrstern/logger
 
 # pnpm
-pnpm add @mrster/logger
+pnpm add @mrstern/logger
 
 # Yarn
-yarn add @mrster/logger
+yarn add @mrstern/logger
 
 # npm
-npm install @mrster/logger
+npm install @mrstern/logger
 ```
 
 ## Usage
@@ -43,7 +43,7 @@ npm install @mrster/logger
 **1. Use the pre-configured base logger:**
 
 ```typescript
-import { baseLogger } from '@mrster/logger';
+import { baseLogger } from '@mrstern/logger';
 
 baseLogger.info('Application started');
 baseLogger.error({ err: new Error('Connection failed') }, 'Database error');
@@ -53,7 +53,7 @@ baseLogger.warn({ userId: '123' }, 'User exceeded rate limit');
 **2. Create a custom logger instance:**
 
 ```typescript
-import { initLogger } from '@mrster/logger';
+import { initLogger } from '@mrstern/logger';
 
 const logger = await initLogger({
   level: 'debug',
@@ -77,7 +77,7 @@ logger.info('Custom logger initialized');
 **Service metadata for organized logs:**
 
 ```typescript
-import { baseLogger } from '@mrster/logger';
+import { baseLogger } from '@mrstern/logger';
 
 baseLogger.info(
   {
@@ -109,7 +109,7 @@ userLogger.debug({ email: 'user@example.com' }, 'Sending verification email');
 **Manual trace context management:**
 
 ```typescript
-import { baseLogger } from '@mrster/logger';
+import { baseLogger } from '@mrstern/logger';
 
 // Set trace context for the current thread/process
 baseLogger.setTraceContext({
@@ -128,7 +128,7 @@ baseLogger.clearTraceContext();
 **Automatic trace context injection:**
 
 ```typescript
-import { initLogger } from '@mrster/logger';
+import { initLogger } from '@mrstern/logger';
 
 const logger = await initLogger({
   telemetry: {
@@ -220,7 +220,7 @@ Logs are written to:
 **Automatic registration of exception handlers:**
 
 ```typescript
-import { initLogger } from '@mrster/logger';
+import { initLogger } from '@mrstern/logger';
 
 const logger = await initLogger({
   logDir: './logs',
@@ -310,7 +310,7 @@ Pre-configured logger instance with sensible defaults, ready to use immediately.
 **Example:**
 
 ```typescript
-import { baseLogger } from '@mrster/logger';
+import { baseLogger } from '@mrstern/logger';
 
 baseLogger.info('Quick and easy logging');
 ```
@@ -490,7 +490,7 @@ Security and performance limits:
 ### Express.js Integration
 
 ```typescript
-import { initLogger } from '@mrster/logger';
+import { initLogger } from '@mrstern/logger';
 import express from 'express';
 
 const logger = await initLogger({
@@ -522,7 +522,7 @@ app.use((err, req, res, next) => {
 ### Microservices with OpenTelemetry
 
 ```typescript
-import { initLogger } from '@mrster/logger';
+import { initLogger } from '@mrstern/logger';
 import { trace } from '@opentelemetry/api';
 
 const logger = await initLogger({
@@ -551,7 +551,7 @@ async function processOrder(orderId: string) {
 ### Background Job Processing
 
 ```typescript
-import { baseLogger } from '@mrster/logger';
+import { baseLogger } from '@mrstern/logger';
 
 async function processBackgroundJobs() {
   const jobLogger = baseLogger.child({
