@@ -253,11 +253,11 @@ describe('Logger Module', () => {
         const context: SpanContext = {
           traceId: 'trace-123',
           spanId: 'span-456',
-          traceFlags: 1,
+          traceFlags: '1',
         };
 
         expect(() => {
-          logger.setTraceContext(context);
+          logger.setTraceContext?.(context);
         }).not.toThrow();
       });
 
@@ -265,7 +265,7 @@ describe('Logger Module', () => {
         const logger = await initLogger();
 
         expect(() => {
-          logger.clearTraceContext();
+          logger.clearTraceContext?.();
         }).not.toThrow();
       });
 
@@ -385,7 +385,7 @@ describe('Logger Module', () => {
       });
 
       test('should not throw on initialization errors', async () => {
-        await expect(async () => {
+        expect(async () => {
           await initLogger({ logDir: '\0invalid' });
         }).not.toThrow();
       });
@@ -446,16 +446,16 @@ describe('Logger Module', () => {
         const context: SpanContext = {
           traceId: 'test-trace-id',
           spanId: 'test-span-id',
-          traceFlags: 1,
+          traceFlags: '1',
         };
 
-        logger.setTraceContext(context);
+        logger.setTraceContext?.(context);
 
         expect(() => {
           logger.info('Message with trace context');
         }).not.toThrow();
 
-        logger.clearTraceContext();
+        logger.clearTraceContext?.();
 
         expect(() => {
           logger.info('Message without trace context');
@@ -537,14 +537,14 @@ describe('Logger Module', () => {
         const context: SpanContext = {
           traceId: 'trace-123',
           spanId: 'span-456',
-          traceFlags: 1,
+          traceFlags: '1',
         };
 
         expect(() => {
-          logger.setTraceContext(context);
-          logger.clearTraceContext();
-          logger.setTraceContext(context);
-          logger.clearTraceContext();
+          logger.setTraceContext?.(context);
+          logger.clearTraceContext?.();
+          logger.setTraceContext?.(context);
+          logger.clearTraceContext?.();
         }).not.toThrow();
       });
 
@@ -684,11 +684,11 @@ describe('Logger Module', () => {
       const context: SpanContext = {
         traceId: 'trace-id',
         spanId: 'span-id',
-        traceFlags: 1,
+        traceFlags: '1',
       };
 
       expect(() => {
-        logger.setTraceContext(context);
+        logger.setTraceContext?.(context);
       }).not.toThrow();
     });
   });

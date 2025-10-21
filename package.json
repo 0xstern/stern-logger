@@ -72,6 +72,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "check": "tsc --noEmit",
     "prepublishOnly": "bun format && bun run lint && bun run test && bun run build"
   },
   "engines": {

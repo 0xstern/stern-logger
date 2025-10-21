@@ -402,7 +402,7 @@ describe('Error Handler Utilities', () => {
     test('err serializer should work correctly', () => {
       const serializers = createSerializers();
       const error = new Error('Test');
-      const result = serializers.err(error);
+      const result = serializers.err!(error);
 
       expect(result).toHaveProperty('message', 'Test');
     });
@@ -410,7 +410,7 @@ describe('Error Handler Utilities', () => {
     test('error serializer should work correctly', () => {
       const serializers = createSerializers();
       const error = new LoggerError('Logger test');
-      const result = serializers.error(error);
+      const result = serializers.error!(error);
 
       expect(result).toHaveProperty('message', 'Logger test');
       expect(result).toHaveProperty('type', 'LoggerError');

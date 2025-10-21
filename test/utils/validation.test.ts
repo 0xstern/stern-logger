@@ -403,7 +403,7 @@ describe('Validation Utilities', () => {
       };
 
       expect(() => {
-        validateAndCastLogger(invalidLogger as pino.Logger);
+        validateAndCastLogger(invalidLogger as unknown as pino.Logger);
       }).toThrow('Invalid logger: missing required methods or properties');
     });
 

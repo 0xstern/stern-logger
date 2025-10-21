@@ -235,7 +235,7 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](testError);
+          handlers[0]!(testError);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalledWith(
@@ -255,12 +255,13 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](testError);
+          handlers[0]!(testError);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalled();
-        const [[logObj]] = (mockLogger.fatal as ReturnType<typeof mock>).mock
-          .calls;
+        const calls = (mockLogger.fatal as ReturnType<typeof mock>).mock!
+          .calls!;
+        const [logObj] = calls[0]!;
         expect((logObj as { err: Error }).err.message).toBe(
           'Detailed error message',
         );
@@ -280,7 +281,7 @@ describe('Process Handlers', () => {
           );
 
           if (handlers.length > 0) {
-            handlers[0](testError);
+            handlers[0]!(testError);
           }
 
           expect(exitSpy).not.toHaveBeenCalled();
@@ -300,7 +301,7 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](testError);
+          handlers[0]!(testError);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalledWith(
@@ -318,12 +319,13 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](testReason);
+          handlers[0]!(testReason);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalled();
-        const [[logObj]] = (mockLogger.fatal as ReturnType<typeof mock>).mock
-          .calls;
+        const calls = (mockLogger.fatal as ReturnType<typeof mock>).mock!
+          .calls!;
+        const [logObj] = calls[0]!;
         expect((logObj as { err: Error }).err).toBeInstanceOf(Error);
         expect((logObj as { err: Error }).err.message).toBe(testReason);
       });
@@ -337,12 +339,13 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](testReason);
+          handlers[0]!(testReason);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalled();
-        const [[logObj]] = (mockLogger.fatal as ReturnType<typeof mock>).mock
-          .calls;
+        const calls = (mockLogger.fatal as ReturnType<typeof mock>).mock!
+          .calls!;
+        const [logObj] = calls[0]!;
         expect((logObj as { err: Error }).err).toBeInstanceOf(Error);
       });
 
@@ -354,12 +357,13 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](null);
+          handlers[0]!(null);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalled();
-        const [[logObj]] = (mockLogger.fatal as ReturnType<typeof mock>).mock
-          .calls;
+        const calls = (mockLogger.fatal as ReturnType<typeof mock>).mock!
+          .calls!;
+        const [logObj] = calls[0]!;
         expect((logObj as { err: Error }).err).toBeInstanceOf(Error);
       });
 
@@ -371,12 +375,13 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](undefined);
+          handlers[0]!(undefined);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalled();
-        const [[logObj]] = (mockLogger.fatal as ReturnType<typeof mock>).mock
-          .calls;
+        const calls = (mockLogger.fatal as ReturnType<typeof mock>).mock!
+          .calls!;
+        const [logObj] = calls[0]!;
         expect((logObj as { err: Error }).err).toBeInstanceOf(Error);
       });
 
@@ -388,7 +393,7 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](42);
+          handlers[0]!(42);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalled();
@@ -411,7 +416,7 @@ describe('Process Handlers', () => {
         );
 
         if (handlers.length > 0) {
-          handlers[0](testError);
+          handlers[0]!(testError);
         }
 
         expect(mockLogger.fatal).toHaveBeenCalled();
@@ -497,11 +502,11 @@ describe('Process Handlers', () => {
       );
 
       if (exceptionHandlers.length > 0) {
-        exceptionHandlers[0](new Error('First error'));
+        exceptionHandlers[0]!(new Error('First error'));
       }
 
       if (rejectionHandlers.length > 0) {
-        rejectionHandlers[0]('Rejection reason');
+        rejectionHandlers[0]!('Rejection reason');
       }
 
       expect(mockLogger.fatal).toHaveBeenCalledTimes(2);
@@ -523,7 +528,7 @@ describe('Process Handlers', () => {
       );
 
       if (handlers.length > 0) {
-        handlers[0](new Error('Test'));
+        handlers[0]!(new Error('Test'));
       }
 
       expect(logger2.fatal).toHaveBeenCalled();
@@ -542,7 +547,7 @@ describe('Process Handlers', () => {
       );
 
       if (handlers.length > 0) {
-        handlers[0](testError);
+        handlers[0]!(testError);
       }
 
       expect(mockLogger.fatal).toHaveBeenCalled();
@@ -557,7 +562,7 @@ describe('Process Handlers', () => {
       );
 
       if (handlers.length > 0) {
-        handlers[0](testError);
+        handlers[0]!(testError);
       }
 
       expect(mockLogger.fatal).toHaveBeenCalled();
@@ -571,7 +576,7 @@ describe('Process Handlers', () => {
       );
 
       if (handlers.length > 0) {
-        handlers[0](false);
+        handlers[0]!(false);
       }
 
       expect(mockLogger.fatal).toHaveBeenCalled();
@@ -585,7 +590,7 @@ describe('Process Handlers', () => {
       );
 
       if (handlers.length > 0) {
-        handlers[0](['error', 'details']);
+        handlers[0]!(['error', 'details']);
       }
 
       expect(mockLogger.fatal).toHaveBeenCalled();
