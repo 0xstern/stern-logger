@@ -39,6 +39,24 @@ const external = [
 const entryPoints = [
   // Main entry point
   { name: 'index', path: 'src/index.ts', outputName: 'index' },
+  // Browser entry point
+  {
+    name: 'browser',
+    path: 'src/browser/index.ts',
+    outputName: 'browser/index',
+  },
+  // Transport entry points
+  {
+    name: 'loki',
+    path: 'src/transports/loki.ts',
+    outputName: 'transports/loki',
+  },
+  // Utility entry points
+  {
+    name: 'metrics',
+    path: 'src/utils/metrics.ts',
+    outputName: 'utils/metrics',
+  },
 ];
 
 async function cleanOutputDirectory(): Promise<void> {

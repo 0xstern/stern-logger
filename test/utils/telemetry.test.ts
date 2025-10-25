@@ -9,7 +9,7 @@ import type { SpanContext } from '../../src/types';
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
-import { TELEMETRY_DEFAULTS } from '../../src/constants';
+import { DEFAULT_TELEMETRY_OPTIONS } from '../../src/constants';
 import {
   clearTraceContext,
   createTraceMixin,
@@ -362,18 +362,18 @@ describe('Telemetry Utilities', () => {
   describe('Size Limits', () => {
     test('should enforce max context size', () => {
       // Add contexts up to the limit
-      for (let i = 0; i < TELEMETRY_DEFAULTS.MAX_CONTEXT_SIZE; i++) {
+      for (let i = 0; i < DEFAULT_TELEMETRY_OPTIONS.MAX_CONTEXT_SIZE; i++) {
         setTraceContext(`thread-${i}`, validSpanContext);
       }
 
       const stats = getTraceContextStats();
       expect(stats.size).toBeLessThanOrEqual(
-        TELEMETRY_DEFAULTS.MAX_CONTEXT_SIZE,
+        DEFAULT_TELEMETRY_OPTIONS.MAX_CONTEXT_SIZE,
       );
     });
 
     test('should evict oldest when size limit is reached', () => {
-      const limit = TELEMETRY_DEFAULTS.MAX_CONTEXT_SIZE;
+      const limit = DEFAULT_TELEMETRY_OPTIONS.MAX_CONTEXT_SIZE;
 
       // Add one more than the limit
       for (let i = 0; i < limit + 1; i++) {

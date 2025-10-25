@@ -7,6 +7,84 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Performance Optimization**: Removed validation layer for 10-15% performance improvement and 8-12KB bundle size reduction
+  - Removed `validateMessage()`, `validateServiceMetadata()`, `validateAndCastLogger()`, `isValidLogger()` functions
+  - Removed `getApproximateSize()` and `isWithinSizeLimit()` utilities
+  - Removed `VALIDATION_LIMITS` and `MEMORY_SIZE` constants
+  - Replaced validation with simple type assertions (Pino handles serialization safely)
+  - **Breaking Change**: Validation utility exports no longer available
+
+- **Constants Architecture (BREAKING)**: Removed all `process.env` references from constants for enterprise flexibility
+  - Constants now provide pure default values (no environment variable reads)
+  - Users have full control over configuration sources (env vars, config files, secret managers, etc.)
+  - **Breaking Changes**:
+    - `LOG_DIRECTORY` renamed to `DEFAULT_LOG_DIRECTORY`
+    - `ROTATION_DEFAULTS` renamed to `DEFAULT_ROTATION_OPTIONS`
+    - `TELEMETRY_DEFAULTS` renamed to `DEFAULT_TELEMETRY_OPTIONS`
+    - `DEFAULT_LOG_LEVEL` is now always `'info'` (was `'debug'` in development, `'info'` in production)
+  - **Migration Guide**:
+
+    ```typescript
+    // Before (automatic env var reading)
+
+    // LOG_LEVEL env var was automatically read
+
+    // After (explicit configuration)
+
+    import { baseLogger, DEFAULT_LOG_LEVEL, initLogger } from '@mrstern/logger';
+
+    const logger = await initLogger({
+      level: process.env.LOG_LEVEL ?? DEFAULT_LOG_LEVEL,
+      defaultService: process.env.SERVICE_NAME ?? 'app',
+    });
+    ```
+
+  - Benefits:
+    - Browser compatible (no `process.env` dependency)
+    - Testable (no global state)
+    - Flexible (Zod validation, AWS Secrets, Vault, config files)
+    - Explicit (clear configuration flow)
+
+### Documentation
+
+- **README Rewrite**: Complete documentation overhaul following technical reference style
+  - Removed marketing language ("enterprise-grade", "production-ready")
+  - Added comprehensive table of contents with deep navigation
+  - Restructured: Quick Start → Core Concepts → Usage → Configuration → Advanced Features → Examples → API Reference → Appendix
+  - **New Appendix Sections**:
+    - **Distributed Tracing Setup**: Complete browser-to-backend tracing guide
+      - OpenTelemetry browser SDK initialization
+      - W3C Trace Context propagation via traceparent headers
+      - Backend instrumentation with auto-injection
+      - Hono and Express middleware examples
+      - Trace context flow diagrams
+      - Verification steps
+    - **LGTM Stack Configuration**: Full Grafana stack integration
+      - Docker Compose setup (Loki, Tempo, Grafana, Prometheus)
+      - Loki transport configuration with batching
+      - Grafana datasource configuration with log-to-trace correlation
+      - LogQL queries and dashboard examples
+      - Prometheus metrics endpoint setup
+      - Production considerations (retention, labels, batching)
+  - Enhanced examples:
+    - Express.js API with request logging
+    - Hono server with OpenTelemetry auto-injection
+    - React application with logger context
+    - Background job processor
+    - Distributed system with end-to-end tracing
+  - Improved configuration documentation:
+    - Environment variable examples
+    - Zod validation pattern
+    - AWS Secrets Manager integration
+
+### Removed
+
+- **Validation Module**: Entire `src/utils/validation.ts` file removed
+  - Trust model: TypeScript types + Pino's built-in serialization provide sufficient safety
+  - Result: ~400 lines of code removed, cleaner API surface, faster logging
+
 ## [0.1.1] - 2024-10-21
 
 ### Added

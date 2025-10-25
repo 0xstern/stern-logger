@@ -32,6 +32,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.mjs",
+      "require": "./dist/browser/index.js"
+    },
+    "./transports/loki": {
+      "types": "./dist/transports/loki.d.ts",
+      "import": "./dist/transports/loki.mjs",
+      "require": "./dist/transports/loki.js"
+    },
+    "./utils/metrics": {
+      "types": "./dist/utils/metrics.d.ts",
+      "import": "./dist/utils/metrics.mjs",
+      "require": "./dist/utils/metrics.js"
     }
   },
   "files": [
@@ -72,8 +87,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "tsc --noEmit",
-    "prepublishOnly": "bun format && bun run lint && bun check && bun run test && bun run build"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun format && bun run lint && bun typecheck && bun run test && bun run build"
   },
   "engines": {
     "node": ">=23.11.0"
@@ -82,7 +97,11 @@
     "@opentelemetry/api": "^1.9.0",
     "pino": "^10.1.0",
     "pino-abstract-transport": "^3.0.0",
+    "pino-loki": "^2.3.0",
     "pino-pretty": "^13.1.2",
     "pino-roll": "^4.0.0"
+  },
+  "optionalDependencies": {
+    "pino-loki": "^2.3.0"
   }
 }

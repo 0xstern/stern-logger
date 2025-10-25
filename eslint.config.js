@@ -9,7 +9,7 @@ import tsEslint from 'typescript-eslint';
 export default [
   // --- Global Ignores ---
   {
-    ignores: ['dist/', 'node_modules/', '.DS_Store'],
+    ignores: ['dist/', 'node_modules/', '.DS_Store', 'examples'],
   },
 
   // --- Base JavaScript Configuration ---

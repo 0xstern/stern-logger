@@ -7,7 +7,7 @@
 
 import type { SpanContext } from '../types';
 
-import { TELEMETRY_DEFAULTS } from '../constants';
+import { DEFAULT_TELEMETRY_OPTIONS } from '../constants';
 
 /**
  * Interface for trace context entries with TTL
@@ -31,9 +31,9 @@ interface TraceContextConfig {
  * Default configuration for trace context storage
  */
 const DEFAULT_TRACE_CONFIG: TraceContextConfig = {
-  maxSize: TELEMETRY_DEFAULTS.MAX_CONTEXT_SIZE,
-  ttlMs: TELEMETRY_DEFAULTS.TTL_MS,
-  cleanupIntervalMs: TELEMETRY_DEFAULTS.CLEANUP_INTERVAL_MS,
+  maxSize: DEFAULT_TELEMETRY_OPTIONS.MAX_CONTEXT_SIZE,
+  ttlMs: DEFAULT_TELEMETRY_OPTIONS.TTL_MS,
+  cleanupIntervalMs: DEFAULT_TELEMETRY_OPTIONS.CLEANUP_INTERVAL_MS,
 };
 
 /**

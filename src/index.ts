@@ -10,7 +10,8 @@
  * - OpenTelemetry trace context correlation
  * - Sensitive data redaction (fast-redact)
  * - Exception and rejection handling
- * - Input validation utilities
+ * - Grafana LGTM stack integration (Loki, Tempo, Prometheus)
+ * - Browser-compatible logger
  * - Comprehensive error handling
  *
  * @example Basic usage with pre-configured logger
@@ -87,23 +88,27 @@ export {
   setTraceContext,
 } from './utils/telemetry';
 
-export {
-  getApproximateSize,
-  isValidLogger,
-  isWithinSizeLimit,
-  validateAndCastLogger,
-  validateMessage,
-  validateServiceMetadata,
-} from './utils/validation';
-
 // Constant exports
 export {
+  DEFAULT_LOG_DIRECTORY,
   DEFAULT_LOG_LEVEL,
   DEFAULT_NODE_ENV,
   DEFAULT_REDACT_PATHS,
+  DEFAULT_ROTATION_OPTIONS,
   DEFAULT_SERVICE_NAME,
-  LOG_DIRECTORY,
-  ROTATION_DEFAULTS,
-  TELEMETRY_DEFAULTS,
-  VALIDATION_LIMITS,
+  DEFAULT_TELEMETRY_OPTIONS,
 } from './constants';
+
+// LGTM Stack Integration
+export {
+  createLokiTransport,
+  type LokiTransportOptions,
+} from './transports/loki';
+
+export {
+  createMetricsMiddleware,
+  getGlobalMetricsCollector,
+  LogMetricsCollector,
+  withMetrics,
+  type LogMetrics,
+} from './utils/metrics';

@@ -15,8 +15,8 @@ import pino from 'pino';
 import {
   DEFAULT_LOG_LEVEL,
   DEFAULT_NODE_ENV,
+  DEFAULT_ROTATION_OPTIONS,
   DEFAULT_SERVICE_NAME,
-  ROTATION_DEFAULTS,
 } from './constants';
 import { setupLogDirectory } from './utils/directory';
 import { ConfigurationError, createSerializers } from './utils/error-handler';
@@ -27,7 +27,6 @@ import {
   getTraceContext,
   setTraceContext,
 } from './utils/telemetry';
-import { validateAndCastLogger } from './utils/validation';
 
 /**
  * Detects if we're running in a Node.js or Bun environment
@@ -71,7 +70,9 @@ function addConsoleTransport(
   targets: Array<pino.TransportTargetOptions>,
   options?: Partial<LoggerOptions>,
 ): void {
-  const isPretty = options?.prettyPrint ?? DEFAULT_NODE_ENV === 'development';
+  // Default to pretty printing for better DX
+  // Users can set prettyPrint: false for production
+  const isPretty = options?.prettyPrint ?? true;
   if (isPretty) {
     targets.push({
       target: 'pino-pretty',
@@ -101,9 +102,11 @@ function createRotationTransport(
   logDir: string,
   level: string,
 ): pino.TransportTargetOptions {
-  const maxSize = rotationOptions.maxSize ?? ROTATION_DEFAULTS.MAX_SIZE;
-  const maxFiles = rotationOptions.maxFiles ?? ROTATION_DEFAULTS.MAX_FILES;
-  const frequency = rotationOptions.frequency ?? ROTATION_DEFAULTS.FREQUENCY;
+  const maxSize = rotationOptions.maxSize ?? DEFAULT_ROTATION_OPTIONS.MAX_SIZE;
+  const maxFiles =
+    rotationOptions.maxFiles ?? DEFAULT_ROTATION_OPTIONS.MAX_FILES;
+  const frequency =
+    rotationOptions.frequency ?? DEFAULT_ROTATION_OPTIONS.FREQUENCY;
 
   return {
     target: 'pino-roll',
@@ -265,13 +268,13 @@ function initializeBaseLogger(): Logger {
       mixin: createTraceMixin(getCurrentThreadId),
     });
 
-    // Validate and cast to our Logger type
-    const validatedLogger = validateAndCastLogger(rawLogger);
+    // Cast to our Logger type (Pino logger is structurally compatible)
+    const logger = rawLogger as Logger;
 
     // Add telemetry helper methods (setTraceContext, clearTraceContext)
-    enhanceLoggerWithTelemetry(validatedLogger);
+    enhanceLoggerWithTelemetry(logger);
 
-    return validatedLogger;
+    return logger;
   } catch (error) {
     // Fallback to console logging if logger creation fails
     console.error(
@@ -412,8 +415,8 @@ export async function initLogger(
     const config = createPinoConfig(options, transport);
     const rawLogger = pino(config);
 
-    // Validate and cast
-    const newLogger = validateAndCastLogger(rawLogger);
+    // Cast to our Logger type (Pino logger is structurally compatible)
+    const newLogger = rawLogger as Logger;
 
     // Add telemetry helper methods
     enhanceLoggerWithTelemetry(newLogger);
