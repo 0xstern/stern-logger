@@ -8,7 +8,6 @@ Built on Pino for high performance. Includes file rotation, pretty console outpu
     <a href="https://github.com/0xstern/stern-logger/actions"><img src="https://img.shields.io/github/actions/workflow/status/0xstern/stern-logger/ci.yml?branch=main" alt="Build Status"></a>
     <a href="https://github.com/0xstern/stern-logger/releases"><img src="https://img.shields.io/npm/v/@mrstern/logger.svg" alt="Latest Release"></a>
     <a href="https://github.com/0xstern/stern-logger/blob/main/LICENSE.md"><img src="https://img.shields.io/npm/l/@mrstern/logger.svg" alt="License"></a>
-    <a href="https://twitter.com/mrstern_"><img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/mrstern_.svg?style=social"></a>
 </p>
 
 ## Table of Contents
