@@ -13,15 +13,28 @@ describe('Formatter', () => {
 
       expect(options).toHaveProperty('colorize', true);
       expect(options).toHaveProperty('translateTime', 'HH:MM:ss');
-      expect(options).toHaveProperty('ignore', 'pid,hostname,level');
+      expect(options).toHaveProperty('ignore', 'pid,hostname');
       expect(options).toHaveProperty('messageFormat');
+      expect(options).toHaveProperty('customLevels');
+      expect(options).toHaveProperty('customColors');
     });
 
-    test('should have messageFormat as a string path', () => {
+    test('should have messageFormat as a template string', () => {
       const options = createCustomPrettyOptions();
 
       expect(typeof options.messageFormat).toBe('string');
-      expect(options.messageFormat).toContain('pino-pretty-formatter.js');
+      expect(options.messageFormat).toBe(
+        '{levelLabel} [{env}] [{service}] {msg}',
+      );
+    });
+
+    test('should define custom level labels', () => {
+      const options = createCustomPrettyOptions();
+      const levels = options.customLevels as Record<number, string>;
+
+      expect(levels[30]).toBe('INFO');
+      expect(levels[50]).toBe('ERROR');
+      expect(levels[20]).toBe('DEBUG');
     });
   });
 });

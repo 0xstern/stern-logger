@@ -228,31 +228,6 @@ async function buildTypes(): Promise<void> {
   );
 }
 
-/**
- * Copy static JavaScript files that are not TypeScript sources
- * These files need to be available at runtime
- */
-async function copyStaticFiles(): Promise<void> {
-  console.log(`\n${BOLD}Copying static files...${RESET_BOLD}${RESET}`);
-
-  // Copy pino-pretty-formatter.js to dist/utils
-  const formatterSrc = 'src/utils/pino-pretty-formatter.js';
-  const formatterDest = 'dist/utils/pino-pretty-formatter.js';
-
-  try {
-    await fs.copyFile(formatterSrc, formatterDest);
-    console.log(
-      `  ${CHECK_MARK} Copied pino-pretty-formatter.js to ${outDir}/utils${RESET}`,
-    );
-  } catch (error: unknown) {
-    console.error(
-      `  ${CROSS_MARK} ${COLOR_ERROR}Failed to copy static files:${RESET}`,
-      error,
-    );
-    process.exit(1);
-  }
-}
-
 async function listBuildArtifacts(
   dir: string,
   prefix: string = '',
@@ -281,7 +256,6 @@ async function executeBuildProcess(): Promise<void> {
   await cleanOutputDirectory();
   await buildAllModules();
   await buildTypes();
-  await copyStaticFiles();
 
   console.log(`\n${BOLD}Build artifacts:${RESET_BOLD}${RESET}`);
   await listBuildArtifacts(outDir);

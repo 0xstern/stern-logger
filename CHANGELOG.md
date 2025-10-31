@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Log Format Implementation**: Simplified custom formatter using pino-pretty native features
+  - Replaced custom JavaScript formatter module with pino-pretty template syntax
+  - Uses `messageFormat`, `customLevels`, and `customColors` options
+  - Removed `src/utils/pino-pretty-formatter.js` and build copy step
+  - Format: `HH:MM:SS LEVEL [env] [service] message` (extra fields indented below)
+  - No breaking changes to API, only implementation details
+
 ## [0.2.0] - 2024-10-30
 
 ### Changed

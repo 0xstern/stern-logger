@@ -515,7 +515,10 @@ logger.info('Server started');
 // Output: 21:44:33 INFO [development] [app] Server started
 
 logger.info({ port: 8080, host: 'localhost' }, 'Listening');
-// Output: 21:44:33 INFO [development] [app] Listening {"port":8080,"host":"localhost"}
+// Output:
+// 21:44:33 INFO [development] [app] Listening
+//     port: 8080
+//     host: "localhost"
 ```
 
 **Traditional pino-pretty Format:**
@@ -534,16 +537,15 @@ logger.info('Server started');
 
 **Format Comparison:**
 
-- **Compact**: `HH:MM:SS LEVEL [env] [service] message {extra}`
-  - Single-line output
-  - Time-only timestamp (HH:MM:SS)
-  - Inline extra fields as JSON
-  - Better for development logs with lots of output
+- **Compact**: `HH:MM:SS LEVEL [env] [service] message`
+  - Concise header line with time-only timestamp
+  - Extra fields displayed indented on separate lines
+  - Better for development logs with clear context
 
-- **Default**: Traditional pino-pretty with full timestamp and indented fields
-  - Multi-line output with indented fields
+- **Default**: Traditional pino-pretty with full timestamp
   - Full timestamp with timezone
-  - Better for detailed inspection
+  - All fields including standard ones shown indented
+  - More verbose output for detailed inspection
 
 **Production (No Pretty Printing):**
 
