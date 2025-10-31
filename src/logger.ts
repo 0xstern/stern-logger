@@ -20,6 +20,7 @@ import {
 } from './constants';
 import { setupLogDirectory } from './utils/directory';
 import { ConfigurationError, createSerializers } from './utils/error-handler';
+import { createCustomPrettyOptions } from './utils/formatter';
 import { createRedactionOptions } from './utils/redaction';
 import {
   clearTraceContext,
@@ -74,14 +75,20 @@ function addConsoleTransport(
   // Users can set prettyPrint: false for production
   const isPretty = options?.prettyPrint ?? true;
   if (isPretty) {
+    const formatStyle = options?.formatStyle ?? 'compact';
+    const prettyOptions =
+      formatStyle === 'compact'
+        ? createCustomPrettyOptions()
+        : {
+            colorize: true,
+            translateTime: 'SYS:standard',
+            ignore: 'pid,hostname',
+          };
+
     targets.push({
       target: 'pino-pretty',
       level: options?.level ?? DEFAULT_LOG_LEVEL,
-      options: {
-        colorize: true,
-        translateTime: 'SYS:standard',
-        ignore: 'pid,hostname',
-      },
+      options: prettyOptions,
     });
   }
 }

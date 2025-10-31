@@ -26,6 +26,7 @@ Built on Pino for high performance. Includes file rotation, pretty console outpu
   - [File Rotation](#file-rotation)
   - [Telemetry](#telemetry)
   - [Redaction](#redaction)
+  - [Log Formatting](#log-formatting)
 - [Advanced Features](#advanced-features)
   - [Distributed Tracing](#distributed-tracing)
   - [LGTM Stack Integration](#lgtm-stack-integration)
@@ -219,6 +220,7 @@ const logger = await initLogger({
 
   // Optional: Pretty printing
   prettyPrint: true, // Default: true in development
+  formatStyle: 'compact', // 'compact' or 'default'
 });
 ```
 
@@ -496,6 +498,63 @@ const logger = await initLogger({
     remove: false, // If true, removes fields instead of censoring
   },
 });
+```
+
+### Log Formatting
+
+Configure console output format style for development and debugging.
+
+**Compact Format (Default):**
+
+```typescript
+const logger = await initLogger({
+  prettyPrint: true,
+  formatStyle: 'compact', // Default
+});
+
+logger.info('Server started');
+// Output: 21:44:33 INFO [development] [app] Server started
+
+logger.info({ port: 8080, host: 'localhost' }, 'Listening');
+// Output: 21:44:33 INFO [development] [app] Listening {"port":8080,"host":"localhost"}
+```
+
+**Traditional pino-pretty Format:**
+
+```typescript
+const logger = await initLogger({
+  prettyPrint: true,
+  formatStyle: 'default',
+});
+
+logger.info('Server started');
+// Output: [2025-10-30 21:44:33.456 -0700] INFO: Server started
+//     service: "app"
+//     env: "development"
+```
+
+**Format Comparison:**
+
+- **Compact**: `HH:MM:SS LEVEL [env] [service] message {extra}`
+  - Single-line output
+  - Time-only timestamp (HH:MM:SS)
+  - Inline extra fields as JSON
+  - Better for development logs with lots of output
+
+- **Default**: Traditional pino-pretty with full timestamp and indented fields
+  - Multi-line output with indented fields
+  - Full timestamp with timezone
+  - Better for detailed inspection
+
+**Production (No Pretty Printing):**
+
+```typescript
+const logger = await initLogger({
+  prettyPrint: false, // Structured JSON for production
+});
+
+logger.info('Server started');
+// Output: {"level":30,"time":1761885873457,"service":"app","env":"production","msg":"Server started"}
 ```
 
 ## Advanced Features
@@ -981,17 +1040,18 @@ Initialize a custom logger instance with configuration.
 
 **Options:**
 
-| Property              | Type                  | Default         | Description                    |
-| --------------------- | --------------------- | --------------- | ------------------------------ |
-| `level`               | `LogLevel`            | `'info'`        | Minimum log level to output    |
-| `defaultService`      | `string`              | `'app'`         | Default service name for logs  |
-| `logDir`              | `string`              | `'./logs'`      | Log directory path             |
-| `fileRotationOptions` | `FileRotationOptions` | See below       | File rotation configuration    |
-| `telemetry`           | `TelemetryOptions`    | See below       | OpenTelemetry integration      |
-| `redactionOptions`    | `RedactionOptions`    | See below       | Custom redaction configuration |
-| `prettyPrint`         | `boolean`             | `true`          | Enable pretty console output   |
-| `nodeEnv`             | `string`              | `'development'` | Node environment               |
-| `redactPaths`         | `string[]`            | Default paths   | Paths to redact                |
+| Property              | Type                     | Default         | Description                    |
+| --------------------- | ------------------------ | --------------- | ------------------------------ |
+| `level`               | `LogLevel`               | `'info'`        | Minimum log level to output    |
+| `defaultService`      | `string`                 | `'app'`         | Default service name for logs  |
+| `logDir`              | `string`                 | `'./logs'`      | Log directory path             |
+| `fileRotationOptions` | `FileRotationOptions`    | See below       | File rotation configuration    |
+| `telemetry`           | `TelemetryOptions`       | See below       | OpenTelemetry integration      |
+| `redactionOptions`    | `RedactionOptions`       | See below       | Custom redaction configuration |
+| `prettyPrint`         | `boolean`                | `true`          | Enable pretty console output   |
+| `formatStyle`         | `'compact' \| 'default'` | `'compact'`     | Console log format style       |
+| `nodeEnv`             | `string`                 | `'development'` | Node environment               |
+| `redactPaths`         | `string[]`               | Default paths   | Paths to redact                |
 
 **FileRotationOptions:**
 

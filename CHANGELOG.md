@@ -47,6 +47,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Flexible (Zod validation, AWS Secrets, Vault, config files)
     - Explicit (clear configuration flow)
 
+- **Log Format (BREAKING)**: Added configurable log format with new compact style as default
+  - New `formatStyle` option in `LoggerOptions`: `'compact' | 'default'`
+  - **Default format changed** from standard pino-pretty to compact format
+  - Compact format: `HH:MM:SS LEVEL [env] [service] message {extra}`
+  - Traditional format: `[YYYY-MM-DD HH:MM:SS.mmm TZ] LEVEL: message (indented fields)`
+  - **Breaking Change**: Default log output format has changed
+  - **Migration Guide**:
+
+    ```typescript
+    // Restore previous format
+
+    import { initLogger } from '@mrstern/logger';
+
+    const logger = await initLogger({
+      prettyPrint: true,
+      formatStyle: 'default', // Use traditional pino-pretty format
+    });
+    ```
+
+  - Implementation:
+    - Created `src/utils/formatter.ts` for configuration
+    - Created `src/utils/pino-pretty-formatter.js` as worker-thread-compatible custom formatter
+    - Updated build process to copy static JS files to dist
+    - Added tests in `test/utils/formatter.test.ts`
+
 ### Documentation
 
 - **README Rewrite**: Complete documentation overhaul following technical reference style

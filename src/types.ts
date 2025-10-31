@@ -132,6 +132,14 @@ export interface LoggerOptions {
   prettyPrint?: boolean;
 
   /**
+   * Format style for pretty printing
+   * - 'compact': HH:MM:SS LEVEL [env] [service] message {extra}
+   * - 'default': Standard pino-pretty format with timestamp and indented fields
+   * @default 'compact'
+   */
+  formatStyle?: 'compact' | 'default';
+
+  /**
    * Enable strict validation of log messages and metadata
    * When false, skips validation for better performance
    * Disabling validation improves throughput by approximately 10-15%
