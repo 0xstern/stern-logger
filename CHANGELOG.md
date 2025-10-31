@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Log Format Display**: Fixed level label display in compact format
+  - Removed `customLevels` configuration that was causing "USERLVL: undefined" output
+  - Now uses standard Pino level labels (INFO, ERROR, WARN, etc.)
+  - Proper level display: `HH:MM:SS INFO [env] [service] message`
+
 ## [0.2.1] - 2024-10-30
 
 ### Changed

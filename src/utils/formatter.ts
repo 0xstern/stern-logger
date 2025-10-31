@@ -19,16 +19,6 @@ export function createCustomPrettyOptions(): Record<string, unknown> {
     translateTime: 'HH:MM:ss',
     ignore: 'pid,hostname',
     messageFormat: '{levelLabel} [{env}] [{service}] {msg}',
-    customLevels: {
-      10: 'TRACE',
-      20: 'DEBUG',
-      30: 'INFO',
-      40: 'WARN',
-      50: 'ERROR',
-      60: 'FATAL',
-    },
-    customColors:
-      'trace:gray,debug:blue,info:green,warn:yellow,error:red,fatal:bgRed',
     singleLine: false,
   };
 }

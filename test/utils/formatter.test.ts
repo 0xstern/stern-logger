@@ -15,8 +15,7 @@ describe('Formatter', () => {
       expect(options).toHaveProperty('translateTime', 'HH:MM:ss');
       expect(options).toHaveProperty('ignore', 'pid,hostname');
       expect(options).toHaveProperty('messageFormat');
-      expect(options).toHaveProperty('customLevels');
-      expect(options).toHaveProperty('customColors');
+      expect(options).toHaveProperty('singleLine', false);
     });
 
     test('should have messageFormat as a template string', () => {
@@ -28,13 +27,11 @@ describe('Formatter', () => {
       );
     });
 
-    test('should define custom level labels', () => {
+    test('should use standard pino levels', () => {
       const options = createCustomPrettyOptions();
-      const levels = options.customLevels as Record<number, string>;
 
-      expect(levels[30]).toBe('INFO');
-      expect(levels[50]).toBe('ERROR');
-      expect(levels[20]).toBe('DEBUG');
+      // Should not have customLevels since we use standard Pino levels
+      expect(options).not.toHaveProperty('customLevels');
     });
   });
 });
