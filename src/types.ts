@@ -140,6 +140,15 @@ export interface LoggerOptions {
   formatStyle?: 'compact' | 'default';
 
   /**
+   * Fields to display in compact format message line
+   * Determines which fields appear in brackets before the message
+   * @default ['pid', 'hostname', 'env', 'service']
+   * @example ['env', 'service'] // Only show env and service
+   * @example ['service'] // Only show service
+   */
+  compactMessageFields?: ReadonlyArray<string>;
+
+  /**
    * Enable strict validation of log messages and metadata
    * When false, skips validation for better performance
    * Disabling validation improves throughput by approximately 10-15%

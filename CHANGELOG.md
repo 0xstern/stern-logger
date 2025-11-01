@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Compact Format Customization**: New `compactMessageFields` option for customizing display fields
+  - Configure which fields appear in brackets before the message
+  - Default: `['pid', 'hostname', 'env', 'service']`
+  - Examples:
+    - `['env', 'service']` → `[development] [app] message`
+    - `['service']` → `[app] message`
+    - `[]` → `message` (no brackets)
+  - Supports any field name for flexible formatting
+
+### Changed
+
+- **Message Color in Compact Format**: Message text now displays in white instead of cyan
+  - Uses ANSI escape codes in messageFormat template for consistent readability
+  - Fields remain cyan, message text is white
+  - Format: `HH:MM:SS LEVEL: [cyan fields] white message`
+
+### Fixed
+
+- **Empty Brackets in Compact Format**: Fixed display of undefined fields
+  - Used pino-pretty conditional syntax to hide empty field values
+  - Template now uses `{if field}[{field}]{end}` pattern
+  - Empty brackets no longer appear for undefined pid/hostname values
+  - Only fields with actual values are displayed in brackets
+
 ## [0.2.2] - 2024-10-30
 
 ### Fixed

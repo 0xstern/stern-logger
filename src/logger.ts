@@ -78,7 +78,7 @@ function addConsoleTransport(
     const formatStyle = options?.formatStyle ?? 'compact';
     const prettyOptions =
       formatStyle === 'compact'
-        ? createCustomPrettyOptions()
+        ? createCustomPrettyOptions(options?.compactMessageFields)
         : {
             colorize: true,
             translateTime: 'SYS:standard',

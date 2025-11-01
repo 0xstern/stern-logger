@@ -512,13 +512,36 @@ const logger = await initLogger({
 });
 
 logger.info('Server started');
-// Output: 21:44:33 INFO [development] [app] Server started
+// Output: 21:44:33 INFO: [12345] [hostname] [development] [app] Server started
 
 logger.info({ port: 8080, host: 'localhost' }, 'Listening');
 // Output:
-// 21:44:33 INFO [development] [app] Listening
+// 21:44:33 INFO: [12345] [hostname] [development] [app] Listening
 //     port: 8080
 //     host: "localhost"
+```
+
+**Customize Display Fields:**
+
+```typescript
+const logger = await initLogger({
+  prettyPrint: true,
+  formatStyle: 'compact',
+  compactMessageFields: ['env', 'service'], // Only show env and service
+});
+
+logger.info('Server started');
+// Output: 21:44:33 INFO: [development] [app] Server started
+
+// Or minimal format with just service
+const minimalLogger = await initLogger({
+  prettyPrint: true,
+  formatStyle: 'compact',
+  compactMessageFields: ['service'],
+});
+
+minimalLogger.info('Server started');
+// Output: 21:44:33 INFO: [app] Server started
 ```
 
 **Traditional pino-pretty Format:**
@@ -1041,18 +1064,19 @@ Initialize a custom logger instance with configuration.
 
 **Options:**
 
-| Property              | Type                     | Default         | Description                    |
-| --------------------- | ------------------------ | --------------- | ------------------------------ |
-| `level`               | `LogLevel`               | `'info'`        | Minimum log level to output    |
-| `defaultService`      | `string`                 | `'app'`         | Default service name for logs  |
-| `logDir`              | `string`                 | `'./logs'`      | Log directory path             |
-| `fileRotationOptions` | `FileRotationOptions`    | See below       | File rotation configuration    |
-| `telemetry`           | `TelemetryOptions`       | See below       | OpenTelemetry integration      |
-| `redactionOptions`    | `RedactionOptions`       | See below       | Custom redaction configuration |
-| `prettyPrint`         | `boolean`                | `true`          | Enable pretty console output   |
-| `formatStyle`         | `'compact' \| 'default'` | `'compact'`     | Console log format style       |
-| `nodeEnv`             | `string`                 | `'development'` | Node environment               |
-| `redactPaths`         | `string[]`               | Default paths   | Paths to redact                |
+| Property               | Type                     | Default                                 | Description                        |
+| ---------------------- | ------------------------ | --------------------------------------- | ---------------------------------- |
+| `level`                | `LogLevel`               | `'info'`                                | Minimum log level to output        |
+| `defaultService`       | `string`                 | `'app'`                                 | Default service name for logs      |
+| `logDir`               | `string`                 | `'./logs'`                              | Log directory path                 |
+| `fileRotationOptions`  | `FileRotationOptions`    | See below                               | File rotation configuration        |
+| `telemetry`            | `TelemetryOptions`       | See below                               | OpenTelemetry integration          |
+| `redactionOptions`     | `RedactionOptions`       | See below                               | Custom redaction configuration     |
+| `prettyPrint`          | `boolean`                | `true`                                  | Enable pretty console output       |
+| `formatStyle`          | `'compact' \| 'default'` | `'compact'`                             | Console log format style           |
+| `compactMessageFields` | `string[]`               | `['pid', 'hostname', 'env', 'service']` | Fields displayed in compact format |
+| `nodeEnv`              | `string`                 | `'development'`                         | Node environment                   |
+| `redactPaths`          | `string[]`               | Default paths                           | Paths to redact                    |
 
 **FileRotationOptions:**
 

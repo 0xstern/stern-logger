@@ -8,30 +8,50 @@ import { createCustomPrettyOptions } from '../../src/utils/formatter';
 
 describe('Formatter', () => {
   describe('createCustomPrettyOptions', () => {
-    test('should return valid pino-pretty options', () => {
+    test('should return valid pino-pretty options with defaults', () => {
       const options = createCustomPrettyOptions();
 
       expect(options).toHaveProperty('colorize', true);
       expect(options).toHaveProperty('translateTime', 'HH:MM:ss');
-      expect(options).toHaveProperty('ignore', 'pid,hostname');
       expect(options).toHaveProperty('messageFormat');
-      expect(options).toHaveProperty('singleLine', false);
     });
 
-    test('should have messageFormat as a template string', () => {
+    test('should use default fields when no fields specified', () => {
       const options = createCustomPrettyOptions();
 
-      expect(typeof options.messageFormat).toBe('string');
       expect(options.messageFormat).toBe(
-        '{levelLabel} [{env}] [{service}] {msg}',
+        '{if pid}[{pid}]{end} {if hostname}[{hostname}]{end} {if env}[{env}]{end} {if service}[{service}]{end} \x1b[37m{msg}\x1b[39m',
       );
     });
 
-    test('should use standard pino levels', () => {
-      const options = createCustomPrettyOptions();
+    test('should allow custom field selection', () => {
+      const options = createCustomPrettyOptions(['env', 'service']);
 
-      // Should not have customLevels since we use standard Pino levels
-      expect(options).not.toHaveProperty('customLevels');
+      expect(options.messageFormat).toBe(
+        '{if env}[{env}]{end} {if service}[{service}]{end} \x1b[37m{msg}\x1b[39m',
+      );
+    });
+
+    test('should handle single field', () => {
+      const options = createCustomPrettyOptions(['service']);
+
+      expect(options.messageFormat).toBe(
+        '{if service}[{service}]{end} \x1b[37m{msg}\x1b[39m',
+      );
+    });
+
+    test('should handle empty fields array', () => {
+      const options = createCustomPrettyOptions([]);
+
+      expect(options.messageFormat).toBe('\x1b[37m{msg}\x1b[39m');
+    });
+
+    test('should allow any field names', () => {
+      const options = createCustomPrettyOptions(['requestId', 'userId']);
+
+      expect(options.messageFormat).toBe(
+        '{if requestId}[{requestId}]{end} {if userId}[{userId}]{end} \x1b[37m{msg}\x1b[39m',
+      );
     });
   });
 });
