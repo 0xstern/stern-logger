@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Namespace Filtering**: Filter logs by component namespace patterns
+  - `initLoggerWithNamespaces()` - Initialize logger with namespace support
+  - `createComponentLogger()` - Create component loggers that respect filtering
+  - `setNamespaceConfig()` / `getNamespaceConfig()` - Manage namespace configuration
+  - Glob pattern matching (e.g., `voice:*`, `api:*,http:*`)
+  - Zero-overhead no-op loggers for disabled namespaces
+  - New `namespaces` option in `LoggerOptions`
+- **New Types**: `ChildLogger` and `LogFn` interfaces for typed logger usage
+- **Namespace Utilities**: Low-level exports for advanced usage
+  - `buildNamespace()` - Build namespace string from ServiceMetadata
+  - `parseNamespacePatterns()` - Parse glob patterns into matchers
+  - `isNamespaceEnabled()` - Check if namespace matches configured patterns
+  - `clearNamespaceCache()` - Clear internal pattern cache
+  - `NamespaceConfig` type for namespace configuration
+
+### Changed
+
+- **Exports**: Added new namespace utilities and types to package exports
+
 ## [0.2.3] - 2024-11-01
 
 ### Added

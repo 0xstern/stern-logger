@@ -42,12 +42,21 @@
  */
 
 // Core exports
-export { baseLogger, initLogger } from './logger';
+export {
+  baseLogger,
+  createComponentLogger,
+  getNamespaceConfig,
+  initLogger,
+  initLoggerWithNamespaces,
+  setNamespaceConfig,
+} from './logger';
 
 // Type exports
 export type {
+  ChildLogger,
   FileRotationOptions,
   Logger,
+  LogFn,
   LoggerOptions,
   ServiceMetadata,
   SeverityLevel,
@@ -87,6 +96,14 @@ export {
   getTraceContextStats,
   setTraceContext,
 } from './utils/telemetry';
+
+export {
+  buildNamespace,
+  clearNamespaceCache,
+  isNamespaceEnabled,
+  type NamespaceConfig,
+  parseNamespacePatterns,
+} from './utils/namespace_filter';
 
 // Constant exports
 export {

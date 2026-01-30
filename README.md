@@ -25,6 +25,7 @@ Built on Pino for high performance. Includes file rotation, pretty console outpu
   - [File Rotation](#file-rotation)
   - [Telemetry](#telemetry)
   - [Redaction](#redaction)
+  - [Namespace Filtering](#namespace-filtering)
   - [Log Formatting](#log-formatting)
 - [Advanced Features](#advanced-features)
   - [Distributed Tracing](#distributed-tracing)
@@ -497,6 +498,100 @@ const logger = await initLogger({
     remove: false, // If true, removes fields instead of censoring
   },
 });
+```
+
+### Namespace Filtering
+
+Control which components output logs based on namespace patterns. This is especially useful for reducing noise during development while keeping all logs available for debugging specific areas.
+
+**Environment Variables:**
+
+```bash
+# Global log level
+LOG_LEVEL=info
+
+# Namespace filtering (glob patterns, comma-separated)
+LOG_NAMESPACES=*              # All namespaces (default)
+LOG_NAMESPACES=voice:*        # Only voice-related logs
+LOG_NAMESPACES=voice:*,http:* # Voice and HTTP logs
+LOG_NAMESPACES=api:controller # Exact namespace match
+```
+
+**Initialization with Namespaces:**
+
+```typescript
+import { initLoggerWithNamespaces } from '@mrstern/logger';
+
+const logger = await initLoggerWithNamespaces({
+  level: 'debug',
+  namespaces: process.env.LOG_NAMESPACES ?? '*',
+  defaultService: 'api',
+});
+```
+
+**Component Loggers:**
+
+Create loggers that respect namespace filtering:
+
+```typescript
+import { createComponentLogger } from '@mrstern/logger';
+
+// Create a component logger with metadata
+const orchestratorLogger = createComponentLogger({
+  component: 'voice',
+  layer: 'orchestrator',
+});
+
+// Logs only when 'voice:orchestrator' matches LOG_NAMESPACES
+orchestratorLogger.info('Call started');
+
+const httpLogger = createComponentLogger({
+  component: 'http',
+  operation: 'request',
+});
+
+// Logs only when 'http:request' matches LOG_NAMESPACES
+httpLogger.debug('Incoming request');
+```
+
+**Namespace Building:**
+
+Namespaces are built from `ServiceMetadata` in this priority order:
+
+1. **Primary**: `component` (fallback: `service`)
+2. **Secondary**: `layer` → `operation` → `domain`
+3. **Suffix**: `integration`
+
+Examples:
+
+| Metadata                                                          | Namespace              |
+| ----------------------------------------------------------------- | ---------------------- |
+| `{ component: 'voice', layer: 'orchestrator' }`                   | `voice:orchestrator`   |
+| `{ component: 'http', operation: 'request' }`                     | `http:request`         |
+| `{ service: 'api', layer: 'controller' }`                         | `api:controller`       |
+| `{ component: 'email', integration: 'ses' }`                      | `email:ses`            |
+| `{ component: 'voice', layer: 'service', integration: 'twilio' }` | `voice:service:twilio` |
+
+**Pattern Matching:**
+
+| Pattern              | Matches                                  | Does Not Match  |
+| -------------------- | ---------------------------------------- | --------------- |
+| `*`                  | Everything                               | -               |
+| `voice:*`            | `voice:orchestrator`, `voice:service`    | `http:request`  |
+| `*:orchestrator`     | `voice:orchestrator`, `api:orchestrator` | `voice:service` |
+| `voice:*,http:*`     | `voice:orchestrator`, `http:request`     | `db:query`      |
+| `voice:orchestrator` | `voice:orchestrator` only                | `voice:service` |
+
+**Zero Performance Impact:**
+
+When a namespace is disabled, `createComponentLogger` returns a no-op logger. All log methods become empty functions, so disabled logs have zero runtime overhead.
+
+```typescript
+// When LOG_NAMESPACES=voice:*
+const httpLogger = createComponentLogger({ component: 'http' });
+
+// These calls do nothing - no string formatting, no I/O
+httpLogger.debug('This is a no-op'); // Zero performance impact
 ```
 
 ### Log Formatting
@@ -1061,6 +1156,76 @@ async function processOrder(orderId: string) {
 ### initLogger(options?)
 
 Initialize a custom logger instance with configuration.
+
+### initLoggerWithNamespaces(options?)
+
+Initialize a logger with namespace-based filtering support. Extends `initLogger` with namespace configuration.
+
+**Additional Options:**
+
+| Property     | Type     | Default | Description                        |
+| ------------ | -------- | ------- | ---------------------------------- |
+| `namespaces` | `string` | `'*'`   | Comma-separated namespace patterns |
+
+**Returns:** `Promise<Logger>`
+
+```typescript
+import { initLoggerWithNamespaces } from '@mrstern/logger';
+
+const logger = await initLoggerWithNamespaces({
+  level: 'debug',
+  namespaces: 'voice:*,http:*',
+  defaultService: 'api',
+});
+```
+
+### createComponentLogger(metadata)
+
+Create a child logger that respects namespace filtering. Returns a no-op logger if the namespace is disabled.
+
+**Parameters:**
+
+| Parameter  | Type              | Description                               |
+| ---------- | ----------------- | ----------------------------------------- |
+| `metadata` | `ServiceMetadata` | Component metadata for namespace building |
+
+**Returns:** `Logger`
+
+```typescript
+import { createComponentLogger } from '@mrstern/logger';
+
+const logger = createComponentLogger({
+  component: 'voice',
+  layer: 'orchestrator',
+});
+
+logger.info('Call started'); // Only logs if namespace matches
+```
+
+### setNamespaceConfig(patterns)
+
+Set the global namespace configuration.
+
+```typescript
+import { setNamespaceConfig } from '@mrstern/logger';
+
+setNamespaceConfig('voice:*,http:*');
+```
+
+### getNamespaceConfig()
+
+Get the current namespace configuration.
+
+```typescript
+import { getNamespaceConfig } from '@mrstern/logger';
+
+const config = getNamespaceConfig();
+console.log(config?.patterns); // 'voice:*,http:*'
+```
+
+---
+
+### initLogger(options?) - Full Reference
 
 **Options:**
 

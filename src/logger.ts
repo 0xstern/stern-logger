@@ -5,7 +5,13 @@
  * OpenTelemetry trace context integration, and telemetry method enhancement.
  */
 
-import type { Logger, LoggerOptions, SpanContext } from './types';
+import type {
+  Logger,
+  LoggerOptions,
+  ServiceMetadata,
+  SpanContext,
+} from './types';
+import type { NamespaceConfig } from './utils/namespace_filter';
 
 import { join } from 'node:path';
 
@@ -21,6 +27,11 @@ import {
 import { setupLogDirectory } from './utils/directory';
 import { ConfigurationError, createSerializers } from './utils/error-handler';
 import { createCustomPrettyOptions } from './utils/formatter';
+import {
+  buildNamespace,
+  isNamespaceEnabled,
+  parseNamespacePatterns,
+} from './utils/namespace_filter';
 import { createRedactionOptions } from './utils/redaction';
 import {
   clearTraceContext,
@@ -443,4 +454,124 @@ export async function initLogger(
     // Return the base logger as fallback
     return baseLogger;
   }
+}
+
+// =============================================================================
+// NAMESPACE FILTERING
+// =============================================================================
+
+/** Current namespace configuration (set via initLogger) */
+let namespaceConfig: NamespaceConfig = parseNamespacePatterns('*');
+
+/** Reference to the current logger instance */
+let currentLogger: Logger = pinoLogger;
+
+/**
+ * No-op logger that silently discards all log calls.
+ * Used when a namespace is disabled.
+ */
+const noOpFn = (): void => {
+  // Intentionally empty - logs are discarded
+};
+
+const noOpLogger: Logger = {
+  fatal: noOpFn,
+  error: noOpFn,
+  warn: noOpFn,
+  info: noOpFn,
+  debug: noOpFn,
+  trace: noOpFn,
+  silent: noOpFn,
+  level: 'silent',
+  child: () => noOpLogger,
+  setTraceContext: noOpFn,
+  getTraceContext: () => undefined,
+  clearTraceContext: noOpFn,
+} as unknown as Logger;
+
+/**
+ * Set the namespace configuration for log filtering.
+ * Called automatically by initLogger when namespaces option is provided.
+ *
+ * @param namespaces - Comma-separated namespace patterns
+ *
+ * @example
+ * ```typescript
+ * setNamespaceConfig('voice:*,twilio:*');
+ * ```
+ */
+export function setNamespaceConfig(namespaces: string): void {
+  namespaceConfig = parseNamespacePatterns(namespaces);
+}
+
+/**
+ * Get the current namespace configuration.
+ *
+ * @returns The current namespace configuration
+ */
+export function getNamespaceConfig(): NamespaceConfig {
+  return namespaceConfig;
+}
+
+/**
+ * Create a component logger with namespace filtering.
+ *
+ * If the namespace is disabled by LOG_NAMESPACES, returns a no-op logger
+ * that silently discards all log calls for zero performance impact.
+ *
+ * @param metadata - Service metadata for the component
+ * @returns Logger instance (real or no-op based on namespace filtering)
+ *
+ * @example
+ * ```typescript
+ * // In voice-call-orchestrator.ts
+ * const log = createComponentLogger({
+ *   component: 'voice',
+ *   layer: 'orchestrator',
+ * });
+ *
+ * // Namespace: "voice:orchestrator"
+ * // If LOG_NAMESPACES=voice:* this logs
+ * // If LOG_NAMESPACES=http:* this is silently discarded
+ * log.debug({ callId }, 'Call started');
+ * ```
+ */
+export function createComponentLogger(metadata: ServiceMetadata): Logger {
+  const namespace = buildNamespace(metadata);
+
+  // Check if namespace is enabled
+  if (!isNamespaceEnabled(namespace, namespaceConfig)) {
+    return noOpLogger;
+  }
+
+  // Create real child logger with metadata
+  return currentLogger.child({
+    ...metadata,
+    namespace,
+  }) as Logger;
+}
+
+/**
+ * Initialize the logger with custom options (enhanced version)
+ *
+ * This version also configures namespace filtering when the namespaces option is provided.
+ *
+ * @param options - Optional logger configuration including namespaces
+ * @returns A promise that resolves with the configured Pino logger instance
+ */
+export async function initLoggerWithNamespaces(
+  options?: Partial<LoggerOptions>,
+): Promise<Logger> {
+  // Configure namespace filtering if provided
+  if (options?.namespaces != null) {
+    setNamespaceConfig(options.namespaces);
+  }
+
+  // Initialize the logger
+  const logger = await initLogger(options);
+
+  // Update the current logger reference for createComponentLogger
+  currentLogger = logger;
+
+  return logger;
 }

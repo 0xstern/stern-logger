@@ -8,6 +8,39 @@
 import type { Logger as PinoLogger } from 'pino';
 
 /**
+ * Log function signature for structured logging.
+ * Supports both object-first and message-only calls.
+ */
+export interface LogFn {
+  (obj: Record<string, unknown>, msg?: string): void;
+  (msg: string): void;
+}
+
+/**
+ * Minimal logger interface for child loggers and helper functions.
+ * Use this type when accepting a logger parameter in functions.
+ */
+export interface ChildLogger {
+  /** Log at fatal level */
+  readonly fatal: LogFn;
+  /** Log at error level */
+  readonly error: LogFn;
+  /** Log at warn level */
+  readonly warn: LogFn;
+  /** Log at info level */
+  readonly info: LogFn;
+  /** Log at debug level */
+  readonly debug: LogFn;
+  /** Log at trace level */
+  readonly trace: LogFn;
+  /**
+   * Create a child logger with additional context bindings.
+   * Pino supports nested children - each child inherits parent bindings.
+   */
+  child(bindings: Record<string, unknown>): ChildLogger;
+}
+
+/**
  * Enhanced logger extending Pino's logger with additional functionality
  */
 export interface Logger extends PinoLogger {
@@ -85,6 +118,15 @@ export interface LoggerOptions {
    * @default 'debug' in development, 'info' in production
    */
   level?: string;
+
+  /**
+   * Comma-separated namespace patterns for filtering logs.
+   * Supports glob patterns: "voice:*" matches voice:orchestrator, voice:service.
+   * Use "*" to enable all namespaces (default).
+   * @example "voice:*,twilio:*" - Only voice and twilio logs
+   * @default "*"
+   */
+  namespaces?: string;
 
   /**
    * Default service name for logs

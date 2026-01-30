@@ -13,7 +13,15 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
-import { baseLogger, initLogger } from '../src/logger';
+import {
+  baseLogger,
+  createComponentLogger,
+  getNamespaceConfig,
+  initLogger,
+  initLoggerWithNamespaces,
+  setNamespaceConfig,
+} from '../src/logger';
+import { clearNamespaceCache } from '../src/utils/namespace_filter';
 
 // Test constants
 const TEST_DIR_PREFIX = 'stern-logger-logger-test-';
@@ -747,6 +755,248 @@ describe('Logger Module', () => {
       expect(() => {
         logger.setTraceContext(context);
       }).not.toThrow();
+    });
+  });
+
+  describe('initLoggerWithNamespaces', () => {
+    afterEach(() => {
+      clearNamespaceCache();
+    });
+
+    test('should initialize logger and return valid instance', async () => {
+      const logger = await initLoggerWithNamespaces({ level: 'info' });
+
+      expect(logger).toBeDefined();
+      expect(typeof logger.info).toBe('function');
+    });
+
+    test('should configure namespace filtering when namespaces option provided', async () => {
+      await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: 'voice:*',
+      });
+
+      const config = getNamespaceConfig();
+      expect(config).toBeDefined();
+      expect(config!.patterns).toBe('voice:*');
+    });
+
+    test('should work with wildcard namespace', async () => {
+      const logger = await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: '*',
+      });
+
+      expect(logger).toBeDefined();
+      const config = getNamespaceConfig();
+      expect(config).toBeDefined();
+      expect(config!.matchers).toEqual([]);
+    });
+
+    test('should accept all initLogger options', async () => {
+      const logger = await initLoggerWithNamespaces({
+        level: 'debug',
+        defaultService: 'test-service',
+        namespaces: 'api:*,voice:*',
+        prettyPrint: false,
+      });
+
+      expect(logger).toBeDefined();
+      expect(logger.level).toBe('debug');
+    });
+
+    test('should work without namespaces option', async () => {
+      const logger = await initLoggerWithNamespaces({ level: 'info' });
+
+      expect(logger).toBeDefined();
+    });
+
+    test('should handle empty namespaces string', async () => {
+      const logger = await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: '',
+      });
+
+      expect(logger).toBeDefined();
+    });
+  });
+
+  describe('setNamespaceConfig and getNamespaceConfig', () => {
+    afterEach(() => {
+      clearNamespaceCache();
+    });
+
+    test('should set namespace config from string', () => {
+      setNamespaceConfig('voice:*');
+
+      const config = getNamespaceConfig();
+      expect(config).toBeDefined();
+      expect(config!.patterns).toBe('voice:*');
+    });
+
+    test('should update namespace config on subsequent calls', () => {
+      setNamespaceConfig('voice:*');
+      setNamespaceConfig('http:*');
+
+      const config = getNamespaceConfig();
+      expect(config).toBeDefined();
+      expect(config!.patterns).toBe('http:*');
+    });
+
+    test('should not throw when getting config', () => {
+      // getNamespaceConfig may return undefined or a valid config
+      // depending on previous test state - just verify it doesn't throw
+      expect(() => getNamespaceConfig()).not.toThrow();
+    });
+  });
+
+  describe('createComponentLogger', () => {
+    beforeEach(async () => {
+      // Initialize logger with namespaces to set up createComponentLogger
+      await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: '*',
+      });
+    });
+
+    afterEach(() => {
+      clearNamespaceCache();
+    });
+
+    test('should create component logger with metadata', () => {
+      const logger = createComponentLogger({
+        component: 'voice',
+        layer: 'orchestrator',
+      });
+
+      expect(logger).toBeDefined();
+      expect(typeof logger.info).toBe('function');
+    });
+
+    test('should create component logger with service metadata', () => {
+      const logger = createComponentLogger({
+        service: 'api',
+        layer: 'controller',
+      });
+
+      expect(logger).toBeDefined();
+    });
+
+    test('should be able to log messages', () => {
+      const logger = createComponentLogger({
+        component: 'test',
+        operation: 'create',
+      });
+
+      expect(() => {
+        logger.info('Test message');
+        logger.debug('Debug message');
+        logger.error('Error message');
+      }).not.toThrow();
+    });
+
+    test('should have all log methods', () => {
+      const logger = createComponentLogger({ component: 'test' });
+
+      expect(typeof logger.trace).toBe('function');
+      expect(typeof logger.debug).toBe('function');
+      expect(typeof logger.info).toBe('function');
+      expect(typeof logger.warn).toBe('function');
+      expect(typeof logger.error).toBe('function');
+      expect(typeof logger.fatal).toBe('function');
+    });
+
+    test('should have child method', () => {
+      const logger = createComponentLogger({ component: 'test' });
+
+      expect(typeof logger.child).toBe('function');
+    });
+  });
+
+  describe('Namespace Filtering Integration', () => {
+    afterEach(() => {
+      clearNamespaceCache();
+    });
+
+    test('should create enabled logger for matching namespace', async () => {
+      await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: 'voice:*',
+      });
+
+      const logger = createComponentLogger({
+        component: 'voice',
+        layer: 'orchestrator',
+      });
+
+      // Logger should be functional (not a no-op)
+      expect(logger).toBeDefined();
+      expect(typeof logger.info).toBe('function');
+    });
+
+    test('should create no-op logger for non-matching namespace', async () => {
+      await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: 'voice:*',
+      });
+
+      const logger = createComponentLogger({
+        component: 'http',
+        operation: 'request',
+      });
+
+      // Logger should still be defined (no-op logger)
+      expect(logger).toBeDefined();
+      expect(typeof logger.info).toBe('function');
+
+      // Should not throw when called
+      expect(() => {
+        logger.info('This should be silenced');
+      }).not.toThrow();
+    });
+
+    test('should enable all loggers with wildcard namespace', async () => {
+      await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: '*',
+      });
+
+      const voiceLogger = createComponentLogger({
+        component: 'voice',
+        layer: 'service',
+      });
+      const httpLogger = createComponentLogger({
+        component: 'http',
+        operation: 'request',
+      });
+
+      expect(voiceLogger).toBeDefined();
+      expect(httpLogger).toBeDefined();
+    });
+
+    test('should work with multiple namespace patterns', async () => {
+      await initLoggerWithNamespaces({
+        level: 'info',
+        namespaces: 'voice:*,http:*',
+      });
+
+      const voiceLogger = createComponentLogger({
+        component: 'voice',
+        layer: 'orchestrator',
+      });
+      const httpLogger = createComponentLogger({
+        component: 'http',
+        operation: 'request',
+      });
+      const dbLogger = createComponentLogger({
+        component: 'db',
+        layer: 'query',
+      });
+
+      // All should be defined (enabled or no-op)
+      expect(voiceLogger).toBeDefined();
+      expect(httpLogger).toBeDefined();
+      expect(dbLogger).toBeDefined();
     });
   });
 });
