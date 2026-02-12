@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-02-12
+
 ### Fixed
 
 - **Compiled Executable Support**: Fixed logger initialization failure in Bun compiled executables

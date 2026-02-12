@@ -1,6 +1,6 @@
 {
   "name": "@mrstern/logger",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A structured logging library built on Pino with OpenTelemetry support and advanced transport capabilities.",
   "keywords": [
     "logger",
