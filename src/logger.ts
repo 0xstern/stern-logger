@@ -52,6 +52,30 @@ function isNodeEnvironment(): boolean {
   );
 }
 
+/**
+ * Detects if we're running in a compiled/bundled executable
+ * @returns True if running as a compiled executable
+ */
+function isCompiledExecutable(): boolean {
+  // Check for Bun compiled executable
+  if (typeof Bun !== 'undefined' && typeof Bun.main === 'string') {
+    // In compiled executables, Bun.main doesn't end in .ts/.js
+    // and typically contains 'bunfs' or doesn't have an extension
+    return !Bun.main.endsWith('.ts') && !Bun.main.endsWith('.js');
+  }
+
+  // Check for other bundled environments
+  // pkg (Node.js compiler) sets process.pkg
+  if (
+    typeof process !== 'undefined' &&
+    typeof (process as { pkg?: unknown }).pkg !== 'undefined'
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 const RADIX_BASE_36 = 36;
 const RANDOM_ID_START = 2;
 const RANDOM_ID_END = 11;
@@ -74,6 +98,21 @@ function getCurrentThreadId(): string {
 }
 
 /**
+ * Determine if pretty printing should be enabled
+ * @param options - Logger options
+ * @returns True if pretty printing should be enabled
+ */
+function shouldEnablePrettyPrint(options?: Partial<LoggerOptions>): boolean {
+  // Disable pretty printing in compiled executables (pino-pretty can't be bundled)
+  if (isCompiledExecutable()) {
+    return false;
+  }
+
+  // Users can set prettyPrint: false explicitly for production
+  return options?.prettyPrint ?? true;
+}
+
+/**
  * Helper to add console transport if needed
  * @param targets - Array to add transport configuration to
  * @param options - Logger options
@@ -82,26 +121,25 @@ function addConsoleTransport(
   targets: Array<pino.TransportTargetOptions>,
   options?: Partial<LoggerOptions>,
 ): void {
-  // Default to pretty printing for better DX
-  // Users can set prettyPrint: false for production
-  const isPretty = options?.prettyPrint ?? true;
-  if (isPretty) {
-    const formatStyle = options?.formatStyle ?? 'compact';
-    const prettyOptions =
-      formatStyle === 'compact'
-        ? createCustomPrettyOptions(options?.compactMessageFields)
-        : {
-            colorize: true,
-            translateTime: 'SYS:standard',
-            ignore: 'pid,hostname',
-          };
-
-    targets.push({
-      target: 'pino-pretty',
-      level: options?.level ?? DEFAULT_LOG_LEVEL,
-      options: prettyOptions,
-    });
+  if (!shouldEnablePrettyPrint(options)) {
+    return;
   }
+
+  const formatStyle = options?.formatStyle ?? 'compact';
+  const prettyOptions =
+    formatStyle === 'compact'
+      ? createCustomPrettyOptions(options?.compactMessageFields)
+      : {
+          colorize: true,
+          translateTime: 'SYS:standard',
+          ignore: 'pid,hostname',
+        };
+
+  targets.push({
+    target: 'pino-pretty',
+    level: options?.level ?? DEFAULT_LOG_LEVEL,
+    options: prettyOptions,
+  });
 }
 
 /**

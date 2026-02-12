@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Compiled Executable Support**: Fixed logger initialization failure in Bun compiled executables
+  - Added `isCompiledExecutable()` detection for Bun compiled binaries and pkg executables
+  - Automatically disables pino-pretty transport in compiled environments (can't be bundled)
+  - Falls back to standard JSON output in compiled executables
+  - Resolves "unable to determine transport target for pino-pretty" error
+  - Added `shouldEnablePrettyPrint()` helper to reduce code complexity
+
 ## [0.2.4] - 2026-01-29
 
 ### Added
