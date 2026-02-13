@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Unified Logger Initialization**: `initLogger()` now handles namespace configuration and updates the internal logger reference used by `createComponentLogger()`
+  - Previously, only `initLoggerWithNamespaces()` updated the internal reference — calling `initLogger()` directly meant component loggers silently used stale config
+  - `initLoggerWithNamespaces()` is now a deprecated alias for `initLogger()` and will be removed in v1.0.0
+
+### Fixed
+
+- **Component Logger Stale Reference**: `createComponentLogger()` now always uses the most recently initialized logger, regardless of whether `initLogger()` or `initLoggerWithNamespaces()` was called
+
 ## [0.2.6] - 2026-02-12
 
 ### Added

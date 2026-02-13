@@ -494,8 +494,14 @@ export async function initLogger(
     // Add telemetry helper methods
     enhanceLoggerWithTelemetry(newLogger);
 
-    // Update the global logger reference
+    // Update global logger references
     pinoLogger = newLogger;
+    currentLogger = newLogger;
+
+    // Configure namespace filtering if provided
+    if (options?.namespaces != null) {
+      setNamespaceConfig(options.namespaces);
+    }
 
     return newLogger;
   } catch (error) {
@@ -607,26 +613,7 @@ export function createComponentLogger(metadata: ServiceMetadata): Logger {
 }
 
 /**
- * Initialize the logger with custom options (enhanced version)
- *
- * This version also configures namespace filtering when the namespaces option is provided.
- *
- * @param options - Optional logger configuration including namespaces
- * @returns A promise that resolves with the configured Pino logger instance
+ * @deprecated Use {@link initLogger} instead, which now handles namespaces directly.
+ * Will be removed in v1.0.0.
  */
-export async function initLoggerWithNamespaces(
-  options?: Partial<LoggerOptions>,
-): Promise<Logger> {
-  // Configure namespace filtering if provided
-  if (options?.namespaces != null) {
-    setNamespaceConfig(options.namespaces);
-  }
-
-  // Initialize the logger
-  const logger = await initLogger(options);
-
-  // Update the current logger reference for createComponentLogger
-  currentLogger = logger;
-
-  return logger;
-}
+export const initLoggerWithNamespaces = initLogger;

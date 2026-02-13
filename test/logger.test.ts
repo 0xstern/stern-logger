@@ -675,6 +675,55 @@ describe('Logger Module', () => {
         expect(logger).toBeDefined();
       });
     });
+
+    describe('Namespace Handling', () => {
+      afterEach(() => {
+        clearNamespaceCache();
+      });
+
+      test('should configure namespace filtering when namespaces option provided', async () => {
+        await initLogger({
+          level: 'info',
+          namespaces: 'voice:*',
+        });
+
+        const config = getNamespaceConfig();
+        expect(config).toBeDefined();
+        expect(config!.patterns).toBe('voice:*');
+      });
+
+      test('should update currentLogger so createComponentLogger uses new config', async () => {
+        await initLogger({
+          level: 'info',
+          namespaces: 'voice:*',
+        });
+
+        const enabledLogger = createComponentLogger({
+          component: 'voice',
+          layer: 'orchestrator',
+        });
+        expect(enabledLogger).toBeDefined();
+        expect(typeof enabledLogger.info).toBe('function');
+
+        // Non-matching namespace should return no-op logger
+        const disabledLogger = createComponentLogger({
+          component: 'http',
+          operation: 'request',
+        });
+        expect(disabledLogger).toBeDefined();
+        // No-op logger's level is 'silent'
+        expect(disabledLogger.level).toBe('silent');
+      });
+
+      test('should not change namespace config when namespaces option is omitted', async () => {
+        setNamespaceConfig('voice:*');
+
+        await initLogger({ level: 'info' });
+
+        const config = getNamespaceConfig();
+        expect(config!.patterns).toBe('voice:*');
+      });
+    });
   });
 
   describe('Logger Lifecycle', () => {
