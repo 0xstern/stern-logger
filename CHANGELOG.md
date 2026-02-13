@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Custom Transports**: New `transports` field in `LoggerOptions` for adding Pino transport targets
+  - Merged with stern-logger's managed transports (console, file)
+  - When any transport is configured, Pino sends output exclusively through transport workers — stdout is suppressed
+  - Enables production setups like Loki-only logging without stdout noise
+
 ## [0.2.7] - 2026-02-12
 
 ### Changed

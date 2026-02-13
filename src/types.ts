@@ -211,6 +211,24 @@ export interface LoggerOptions {
   strict?: boolean;
 
   /**
+   * Additional Pino transport targets to include in the logger pipeline.
+   * Merged with stern-logger's managed transports (console, file).
+   *
+   * When any transport is configured, Pino sends output exclusively
+   * through transport workers — stdout is suppressed.
+   *
+   * @example
+   * ```typescript
+   * {
+   *   transports: [
+   *     createLokiTransport({ host: 'http://loki:3100', labels: { app: 'my-app' } }),
+   *   ]
+   * }
+   * ```
+   */
+  transports?: ReadonlyArray<pino.TransportTargetOptions>;
+
+  /**
    * Native Pino options passed through to the underlying logger.
    *
    * Options managed by stern-logger (`level`, `serializers`, `redact`,

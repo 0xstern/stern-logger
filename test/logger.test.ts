@@ -233,6 +233,68 @@ describe('Logger Module', () => {
       });
     });
 
+    describe('Custom Transports', () => {
+      test('should accept custom transports', async () => {
+        const logger = await initLogger({
+          transports: [
+            {
+              target: 'pino/file',
+              options: {
+                destination: join(testLogDir, 'custom.log'),
+                mkdir: true,
+              },
+            },
+          ],
+        });
+
+        expect(logger).toBeDefined();
+      });
+
+      test('should merge custom transports with console transport', async () => {
+        const logger = await initLogger({
+          prettyPrint: true,
+          transports: [
+            {
+              target: 'pino/file',
+              options: {
+                destination: join(testLogDir, 'custom.log'),
+                mkdir: true,
+              },
+            },
+          ],
+        });
+
+        expect(logger).toBeDefined();
+      });
+
+      test('should work with custom transports and no console transport', async () => {
+        const logger = await initLogger({
+          prettyPrint: false,
+          transports: [
+            {
+              target: 'pino/file',
+              options: {
+                destination: join(testLogDir, 'custom.log'),
+                mkdir: true,
+              },
+            },
+          ],
+        });
+
+        expect(logger).toBeDefined();
+        // With prettyPrint: false and a custom transport,
+        // output goes exclusively to the transport (no stdout)
+      });
+
+      test('should accept empty transports array', async () => {
+        const logger = await initLogger({
+          transports: [],
+        });
+
+        expect(logger).toBeDefined();
+      });
+    });
+
     describe('Telemetry', () => {
       test('should accept telemetry configuration', async () => {
         const logger = await initLogger({

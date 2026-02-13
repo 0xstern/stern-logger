@@ -244,6 +244,11 @@ function createTransport(
   // Add file transport if needed
   addFileTransport(targets, options);
 
+  // Add user-provided transports
+  if (options?.transports != null) {
+    targets.push(...options.transports);
+  }
+
   // If no targets, use default console
   if (targets.length === 0) {
     return undefined;
