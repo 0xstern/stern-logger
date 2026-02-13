@@ -405,6 +405,23 @@ function createLoggerMixin(
 }
 
 /**
+ * Creates the base metadata fields for the logger
+ * @param options - Logger options
+ * @param pinoBase - Additional base fields from pinoOptions passthrough
+ * @returns Base configuration object
+ */
+function createBaseConfig(
+  options?: Partial<LoggerOptions>,
+  pinoBase?: Record<string, unknown> | null,
+): Record<string, unknown> {
+  return {
+    ...pinoBase,
+    service: options?.defaultService ?? DEFAULT_SERVICE_NAME,
+    env: options?.nodeEnv ?? DEFAULT_NODE_ENV,
+  };
+}
+
+/**
  * Creates Pino logger configuration object
  * @param options - Logger options
  * @param transport - Transport configuration
@@ -417,14 +434,14 @@ function createPinoConfig(
     | pino.TransportSingleOptions
     | undefined,
 ): pino.LoggerOptions {
+  const pinoOptions = options?.pinoOptions;
+
   return {
+    ...pinoOptions,
     level: options?.level ?? DEFAULT_LOG_LEVEL,
     serializers: createSerializers(),
     redact: createRedactionOptions(options?.redactPaths),
-    base: {
-      service: options?.defaultService ?? DEFAULT_SERVICE_NAME,
-      env: options?.nodeEnv ?? DEFAULT_NODE_ENV,
-    },
+    base: createBaseConfig(options, pinoOptions?.base),
     ...(transport && { transport }),
     mixin: createLoggerMixin(options),
   };

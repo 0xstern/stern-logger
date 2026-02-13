@@ -5,7 +5,9 @@
  * service metadata, file rotation, and OpenTelemetry span context.
  */
 
-import type { Logger as PinoLogger } from 'pino';
+import type pino from 'pino';
+
+type PinoLogger = pino.Logger;
 
 /**
  * Log function signature for structured logging.
@@ -110,6 +112,15 @@ export interface ServiceMetadata {
 }
 
 /**
+ * Pino options available for passthrough configuration.
+ * Options managed by stern-logger are excluded to prevent silent conflicts.
+ */
+type PinoPassthroughOptions = Omit<
+  pino.LoggerOptions,
+  'level' | 'mixin' | 'redact' | 'serializers' | 'transport'
+>;
+
+/**
  * Configuration options for the logger
  */
 export interface LoggerOptions {
@@ -198,6 +209,29 @@ export interface LoggerOptions {
    * @default true
    */
   strict?: boolean;
+
+  /**
+   * Native Pino options passed through to the underlying logger.
+   *
+   * Options managed by stern-logger (`level`, `serializers`, `redact`,
+   * `transport`, `mixin`) are excluded at the type level — use the
+   * corresponding stern-logger options instead.
+   *
+   * The `base` field is merged: your fields are added alongside
+   * stern-logger's `service` and `env` (which always take precedence).
+   *
+   * @example
+   * ```typescript
+   * {
+   *   pinoOptions: {
+   *     timestamp: false,
+   *     browser: { asObject: true },
+   *     base: { region: 'us-east-1' },
+   *   }
+   * }
+   * ```
+   */
+  pinoOptions?: PinoPassthroughOptions;
 }
 
 /**

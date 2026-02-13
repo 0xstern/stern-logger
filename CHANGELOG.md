@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Pino Passthrough Options**: New `pinoOptions` field in `LoggerOptions` for native Pino configuration
+  - Access advanced Pino features not explicitly exposed by stern-logger (e.g., `timestamp`, `browser`, `formatters`)
+  - Type-safe: options managed by stern-logger (`level`, `serializers`, `redact`, `transport`, `mixin`) are excluded at the type level via `Omit`
+  - `base` field is merged — custom fields are added alongside stern-logger's `service` and `env` (which always take precedence)
+
 ## [0.2.5] - 2026-02-12
 
 ### Fixed
